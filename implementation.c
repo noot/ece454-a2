@@ -14,7 +14,60 @@
  * Note2: You can assume the object will never be moved off the screen
  **********************************************************************************************************************/
 unsigned char *processMoveUp(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
-    return processMoveUpReference(buffer_frame, width, height, offset);
+    // handle negative offsets
+    if (offset < 0){
+        return processMoveDownReference(buffer_frame, width, height, offset * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    //unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = 0; row < (height - offset); row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            int position_buffer_frame = (row + offset) * width * 3 + column * 3;
+            //rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            // rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            // rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+
+            // copy existing pixels back to buffer
+            buffer_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            buffer_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            buffer_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // fill left over pixels with white pixels
+    for (int row = (height - offset); row < height; row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            // rendered_frame[position_rendered_frame] = 255;
+            // rendered_frame[position_rendered_frame + 1] = 255;
+            // rendered_frame[position_rendered_frame + 2] = 255;
+
+            // copy existing pixels back to buffer
+            buffer_frame[position_rendered_frame] = 255;// rendered_frame[position_rendered_frame];
+            buffer_frame[position_rendered_frame + 1] = 255;// rendered_frame[position_rendered_frame + 1];
+            buffer_frame[position_rendered_frame + 2] = 255;//rendered_frame[position_rendered_frame + 2];
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    // for(int row = 0; row < (height-offset); row++){
+    //     for(int column = 0; column < width; column++){
+    //         int position = row * width * 3 + column * 3;
+    //         buffer_frame[position] = rendered_frame[position];
+    //         buffer_frame[position + 1] = rendered_frame[position + 1];
+    //         buffer_frame[position + 2] = rendered_frame[position + 2];
+    //     }
+    // }
+
+    // free temporary image buffer
+    //deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -27,7 +80,58 @@ unsigned char *processMoveUp(unsigned char *buffer_frame, unsigned width, unsign
  * Note2: You can assume the object will never be moved off the screen
  **********************************************************************************************************************/
 unsigned char *processMoveRight(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
-    return processMoveRightReference(buffer_frame, width, height, offset);
+    // handle negative offsets
+    if (offset < 0){
+        return processMoveLeftReference(buffer_frame, width, height, offset * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    //unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = 0; row < height; row++) {
+        for (int column = width-1; column >= offset; column--) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            int position_buffer_frame = row * width * 3 + (column - offset) * 3;
+            // rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            // rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            // rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+
+            buffer_frame[position_rendered_frame] =  buffer_frame[position_buffer_frame];
+            buffer_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            buffer_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // fill left over pixels with white pixels
+    for (int row = 0; row < height; row++) {
+        for (int column = 0; column < offset; column++) {
+            int position = row * width * 3 + column * 3;
+            // rendered_frame[position_rendered_frame] = 255;
+            // rendered_frame[position_rendered_frame + 1] = 255;
+            // rendered_frame[position_rendered_frame + 2] = 255;
+
+            buffer_frame[position] = 255;
+            buffer_frame[position + 1] = 255;
+            buffer_frame[position + 2] = 255;
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    // for(int row = 0; row < height; row++){
+    //     for(int column = offset; column < width; column++){
+    //         int position = row * width * 3 + column * 3;
+    //         buffer_frame[position] = rendered_frame[position];
+    //         buffer_frame[position + 1] = rendered_frame[position + 1];
+    //         buffer_frame[position + 2] = rendered_frame[position + 2];
+    //     }
+    // }
+
+    // free temporary image buffer
+   // deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -40,7 +144,50 @@ unsigned char *processMoveRight(unsigned char *buffer_frame, unsigned width, uns
  * Note2: You can assume the object will never be moved off the screen
  **********************************************************************************************************************/
 unsigned char *processMoveDown(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
-    return processMoveDownReference(buffer_frame, width, height, offset);
+    // handle negative offsets
+    if (offset < 0){
+        return processMoveUpReference(buffer_frame, width, height, offset * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = offset; row < height; row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            int position_buffer_frame = (row - offset) * width * 3 + column * 3;
+            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // fill left over pixels with white pixels
+    for (int row = 0; row < offset; row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            rendered_frame[position_rendered_frame] = 255;
+            rendered_frame[position_rendered_frame + 1] = 255;
+            rendered_frame[position_rendered_frame + 2] = 255;
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    for(int row = 0; row < height; row++){
+        for(int column = 0; column < width; column++){
+            int position = row * width * 3 + column * 3;
+            buffer_frame[position] = rendered_frame[position];
+            buffer_frame[position + 1] = rendered_frame[position + 1];
+            buffer_frame[position + 2] = rendered_frame[position + 2];
+        }
+    }
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -53,7 +200,50 @@ unsigned char *processMoveDown(unsigned char *buffer_frame, unsigned width, unsi
  * Note2: You can assume the object will never be moved off the screen
  **********************************************************************************************************************/
 unsigned char *processMoveLeft(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
-    return processMoveLeftReference(buffer_frame, width, height, offset);
+    // handle negative offsets
+    if (offset < 0){
+        return processMoveRightReference(buffer_frame, width, height, offset * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = 0; row < height; row++) {
+        for (int column = 0; column < (width - offset); column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            int position_buffer_frame = row * width * 3 + (column + offset) * 3;
+            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // fill left over pixels with white pixels
+    for (int row = 0; row < height; row++) {
+        for (int column = width - offset; column < width; column++) {
+            int position_rendered_frame = row * width * 3 + column * 3;
+            rendered_frame[position_rendered_frame] = 255;
+            rendered_frame[position_rendered_frame + 1] = 255;
+            rendered_frame[position_rendered_frame + 2] = 255;
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    for(int row = 0; row < height; row++){
+        for(int column = 0; column < width; column++){
+            int position = row * width * 3 + column * 3;
+            buffer_frame[position] = rendered_frame[position];
+            buffer_frame[position + 1] = rendered_frame[position + 1];
+            buffer_frame[position + 2] = rendered_frame[position + 2];
+        }
+    }
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -66,7 +256,46 @@ unsigned char *processMoveLeft(unsigned char *buffer_frame, unsigned width, unsi
  **********************************************************************************************************************/
 unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsigned height,
                                int rotate_iteration) {
-    return processRotateCWReference(buffer_frame, width, height, rotate_iteration);
+    // handle negative offsets
+    if (rotate_iteration < 0){
+        return processRotateCCWReference(buffer_frame, width, height, rotate_iteration * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int iteration = 0; iteration < rotate_iteration; iteration++) {
+        int render_column = width - 1;
+        int render_row = 0;
+        for (int row = 0; row < width; row++) {
+            for (int column = 0; column < height; column++) {
+                int position_frame_buffer = row * width * 3 + column * 3;
+                rendered_frame[render_row * width * 3 + render_column * 3] = buffer_frame[position_frame_buffer];
+                rendered_frame[render_row * width * 3 + render_column * 3 + 1] = buffer_frame[position_frame_buffer + 1];
+                rendered_frame[render_row * width * 3 + render_column * 3 + 2] = buffer_frame[position_frame_buffer + 2];
+                render_row += 1;
+            }
+            render_row = 0;
+            render_column -= 1;
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    for(int row = 0; row < height; row++){
+        for(int column = 0; column < width; column++){
+            int position = row * width * 3 + column * 3;
+            buffer_frame[position] = rendered_frame[position];
+            buffer_frame[position + 1] = rendered_frame[position + 1];
+            buffer_frame[position + 2] = rendered_frame[position + 2];
+        }
+    }
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -79,7 +308,21 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
  **********************************************************************************************************************/
 unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, unsigned height,
                                 int rotate_iteration) {
-    return processRotateCCWReference(buffer_frame, width, height, rotate_iteration);
+    if (rotate_iteration < 0){
+        // handle negative offsets
+        // rotating 90 degrees counter clockwise in opposite direction is equal to 90 degrees in cw direction
+        for (int iteration = 0; iteration > rotate_iteration; iteration--) {
+            buffer_frame = processRotateCWReference(buffer_frame, width, height, 1);
+        }
+    } else {
+        // rotating 90 degrees counter clockwise is equivalent of rotating 270 degrees clockwise
+        for (int iteration = 0; iteration < rotate_iteration; iteration++) {
+            buffer_frame = processRotateCWReference(buffer_frame, width, height, 3);
+        }
+    }
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -90,7 +333,35 @@ unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, uns
  * @return
  **********************************************************************************************************************/
 unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, unsigned int height, int _unused) {
-    return processMirrorXReference(buffer_frame, width, height, _unused);
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = 0; row < height; row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * height * 3 + column * 3;
+            int position_buffer_frame = (height - row - 1) * height * 3 + column * 3;
+            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    for(int row = 0; row < height; row++){
+        for(int column = 0; column < width; column++){
+            int position = row * width * 3 + column * 3;
+            buffer_frame[position] = rendered_frame[position];
+            buffer_frame[position + 1] = rendered_frame[position + 1];
+            buffer_frame[position + 2] = rendered_frame[position + 2];
+        }
+    }
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -101,7 +372,35 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
  * @return
  **********************************************************************************************************************/
 unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsigned height, int _unused) {
-    return processMirrorYReference(buffer_frame, width, height, _unused);
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    // store shifted pixels to temporary buffer
+    for (int row = 0; row < height; row++) {
+        for (int column = 0; column < width; column++) {
+            int position_rendered_frame = row * height * 3 + column * 3;
+            int position_buffer_frame = row * height * 3 + (width - column - 1) * 3;
+            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
+            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
+            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        }
+    }
+
+    // copy the temporary buffer back to original frame buffer
+    for(int row = 0; row < height; row++){
+        for(int column = 0; column < width; column++){
+            int position = row * width * 3 + column * 3;
+            buffer_frame[position] = rendered_frame[position];
+            buffer_frame[position + 1] = rendered_frame[position + 1];
+            buffer_frame[position + 2] = rendered_frame[position + 2];
+        }
+    }
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -110,12 +409,12 @@ unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsig
  **********************************************************************************************************************/
 void print_team_info(){
     // Please modify this field with something interesting
-    char team_name[] = "default-name";
+    char team_name[] = "noot";
 
     // Please fill in your information
-    char student_first_name[] = "john";
-    char student_last_name[] = "doe";
-    char student_student_number[] = "0000000000";
+    char student_first_name[] = "Elizabeth";
+    char student_last_name[] = "Binks";
+    char student_student_number[] = "1001274676";
 
     // Printing out team information
     printf("*******************************************************************************************************\n");
