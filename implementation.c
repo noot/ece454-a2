@@ -14,7 +14,23 @@
  * Note2: You can assume the object will never be moved off the screen
  **********************************************************************************************************************/
 unsigned char *processMoveUp(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
-    return processMoveUpReference(buffer_frame, width, height, offset);
+    // handle negative offsets
+    if (offset < 0){
+        return processMoveDownReference(buffer_frame, width, height, offset * -1);
+    }
+
+    // allocate memory for temporary image buffer
+    unsigned char *rendered_frame = allocateFrame(width, height);
+
+    memmove(rendered_frame, buffer_frame+offset*width*3, width*3*height - width*3*offset);
+    memset(rendered_frame + (height-offset)*width*3, 255, offset*width*3);
+    memmove(buffer_frame, rendered_frame, sizeof(rendered_frame));
+
+    // free temporary image buffer
+    deallocateFrame(rendered_frame);
+
+    // return a pointer to the updated image buffer
+    return buffer_frame;
 }
 
 /***********************************************************************************************************************
@@ -110,12 +126,12 @@ unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsig
  **********************************************************************************************************************/
 void print_team_info(){
     // Please modify this field with something interesting
-    char team_name[] = "default-name";
+    char team_name[] = "noot";
 
     // Please fill in your information
-    char student_first_name[] = "john";
-    char student_last_name[] = "doe";
-    char student_student_number[] = "0000000000";
+    char student_first_name[] = "Elizabeth";
+    char student_last_name[] = "Binks";
+    char student_student_number[] = "1001274676";
 
     // Printing out team information
     printf("*******************************************************************************************************\n");
