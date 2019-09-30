@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "utilities.h"  // DO NOT REMOVE this line
@@ -143,6 +144,7 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
                 rendered_frame[render_row * width * 3 + render_column * 3] = buffer_frame[position_frame_buffer];
                 rendered_frame[render_row * width * 3 + render_column * 3 + 1] = buffer_frame[position_frame_buffer + 1];
                 rendered_frame[render_row * width * 3 + render_column * 3 + 2] = buffer_frame[position_frame_buffer + 2];
+                //memmove(buffer_frame + render_row*width*3 + render_column*3, buffer_frame+row*width*3 + column*3, width*3-);
                 render_row += 1;
             }
             render_row = 0;
@@ -170,15 +172,15 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
  **********************************************************************************************************************/
 unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, unsigned height,
                                 int rotate_iteration) {
-    // if (rotate_iteration%4 == 1) {
-    //     rotate_iteration = 1;
-    // } else if (rotate_iteration%4 == 2) {
-    //     rotate_iteration = 2;
-    // } else if (rotate_iteration%4 == 3) {
-    //     rotate_iteration = 3;
-    // } else {
-    //     rotate_iteration = 0;
-    // }
+    if (rotate_iteration%4 == 1) {
+        rotate_iteration = 1;
+    } else if (rotate_iteration%4 == 2) {
+        rotate_iteration = 2;
+    } else if (rotate_iteration%4 == 3) {
+        rotate_iteration = 3;
+    } else {
+        rotate_iteration = 0;
+    }
 
     if (rotate_iteration < 0){
         // handle negative offsets
@@ -205,32 +207,15 @@ unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, uns
  * @return
  **********************************************************************************************************************/
 unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, unsigned int height, int _unused) {
-    // allocate memory for temporary image buffer
-    unsigned char *rendered_frame = allocateFrame(width, height);
-
-    // store shifted pixels to temporary buffer
-    for (int row = 0; row < height; row++) {
-        for (int column = 0; column < width; column++) {
-            int position_rendered_frame = row * height * 3 + column * 3;
-            int position_buffer_frame = (height - row - 1) * height * 3 + column * 3;
-            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
-            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
-            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
-        }
+    unsigned char *temp_row = (unsigned char*)malloc(width*3*sizeof(char));
+    for (int row = 0; row < height/2; row++) {
+        // copy row from top half of frame to temp
+        memcpy(temp_row, buffer_frame+row*width*3, width*3);
+        // copy row from bottom half to top half of frame
+        memcpy(buffer_frame+row*width*3, buffer_frame+(height-row-1)*width*3, width*3);
+        // copy row that was saved from top half to bottom half
+        memcpy(buffer_frame+(height-row-1)*width*3, temp_row, width*3);
     }
-
-    // copy the temporary buffer back to original frame buffer
-    for(int row = 0; row < height; row++){
-        for(int column = 0; column < width; column++){
-            int position = row * width * 3 + column * 3;
-            buffer_frame[position] = rendered_frame[position];
-            buffer_frame[position + 1] = rendered_frame[position + 1];
-            buffer_frame[position + 2] = rendered_frame[position + 2];
-        }
-    }
-
-    // free temporary image buffer
-    deallocateFrame(rendered_frame);
 
     // return a pointer to the updated image buffer
     return buffer_frame;
