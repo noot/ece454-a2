@@ -217,6 +217,8 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
         memcpy(buffer_frame+(height-row-1)*width*3, temp_row, width*3);
     }
 
+    free(temp_row);
+
     // return a pointer to the updated image buffer
     return buffer_frame;
 }
@@ -229,32 +231,24 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
  * @return
  **********************************************************************************************************************/
 unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsigned height, int _unused) {
-    // allocate memory for temporary image buffer
-    unsigned char *rendered_frame = allocateFrame(width, height);
+    unsigned char *temp_row = (unsigned char*)malloc((width/2)*3*sizeof(char));
 
-    // store shifted pixels to temporary buffer
     for (int row = 0; row < height; row++) {
-        for (int column = 0; column < width; column++) {
-            int position_rendered_frame = row * height * 3 + column * 3;
-            int position_buffer_frame = row * height * 3 + (width - column - 1) * 3;
-            rendered_frame[position_rendered_frame] = buffer_frame[position_buffer_frame];
-            rendered_frame[position_rendered_frame + 1] = buffer_frame[position_buffer_frame + 1];
-            rendered_frame[position_rendered_frame + 2] = buffer_frame[position_buffer_frame + 2];
+        for (int col = 0; col < width/2; col++) {
+            int right_pos = row*width*3 + (width-col-1)*3;
+            int left_pos = row*width*3 + col*3;
+            // copy right side of row into temp in reverse order
+            memcpy(temp_row + col, buffer_frame + right_pos, 3);
+            // copy left side of buffer row into right side of buffer row in reverse order
+            memcpy(buffer_frame + right_pos, buffer_frame + left_pos, 3);
+            // copy temp pixel back into left side of buffer
+            memcpy(buffer_frame + left_pos, temp_row + col, 3);
         }
+         // copy temp half-row which contains new left side back into left half of buffer
+        //memcpy(buffer_frame + row*width*3, temp_row, width*3/2);
     }
 
-    // copy the temporary buffer back to original frame buffer
-    for(int row = 0; row < height; row++){
-        for(int column = 0; column < width; column++){
-            int position = row * width * 3 + column * 3;
-            buffer_frame[position] = rendered_frame[position];
-            buffer_frame[position + 1] = rendered_frame[position + 1];
-            buffer_frame[position + 2] = rendered_frame[position + 2];
-        }
-    }
-
-    // free temporary image buffer
-    deallocateFrame(rendered_frame);
+    free(temp_row);
 
     // return a pointer to the updated image buffer
     return buffer_frame;
