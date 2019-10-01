@@ -26,12 +26,11 @@ unsigned char *processMoveMirrorY(unsigned char *buffer_frame, unsigned width, u
 unsigned char *processMoveUp(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
     // handle negative offsets
     if (offset < 0){
-        return processMoveDown(buffer_frame, width, height, offset * -1);
+        memmove(buffer_frame+offset*width*3, buffer_frame, width*3*(height-offset));
+        return buffer_frame;
     }
 
     memmove(buffer_frame, buffer_frame+offset*width*3, width*3*height - width*3*offset);
-
-    // return a pointer to the updated image buffer
     return buffer_frame;
 }
 
@@ -47,10 +46,13 @@ unsigned char *processMoveUp(unsigned char *buffer_frame, unsigned width, unsign
 unsigned char *processMoveRight(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
     // handle negative offsets
     if (offset < 0){
-        return processMoveLeft(buffer_frame, width, height, offset * -1);
+        // for each row, shift right by offset
+        for (int row = 0; row < height; row++) {
+            memmove(buffer_frame + row*width*3, buffer_frame+row*width*3  + offset*3, 3*(width-offset));
+            memset(buffer_frame + (row+1)*width*3 - offset*3, 255, offset*3);
+        }
+        return buffer_frame;
     }
-
-    //return processMoveRightReference(buffer_frame, width, height, offset);
 
     // for each row, shift right by offset
     for (int row = 0; row < height; row++) {
@@ -74,14 +76,11 @@ unsigned char *processMoveRight(unsigned char *buffer_frame, unsigned width, uns
 unsigned char *processMoveDown(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
     // handle negative offsets
     if (offset < 0){
-        return processMoveUp(buffer_frame, width, height, offset * -1);
+        memmove(buffer_frame, buffer_frame+offset*width*3, width*3*height - width*3*offset);
+        return buffer_frame;
     }
 
-    //return processMoveDownReference(buffer_frame, width, height, offset);
-
     memmove(buffer_frame+offset*width*3, buffer_frame, width*3*(height-offset));
-
-    // return a pointer to the updated image buffer
     return buffer_frame;
 }
 
@@ -97,10 +96,12 @@ unsigned char *processMoveDown(unsigned char *buffer_frame, unsigned width, unsi
 unsigned char *processMoveLeft(unsigned char *buffer_frame, unsigned width, unsigned height, int offset) {
     // handle negative offsets
     if (offset < 0){
-        return processMoveRight(buffer_frame, width, height, offset * -1);
+        // for each row, shift right by offset
+        for (int row = 0; row < height; row++) {
+            memmove(buffer_frame + row*width*3 + offset*3, buffer_frame+row*width*3, 3*(width-offset));
+            memset(buffer_frame + row*width*3, 255, offset*3);
+        }
     }
-
-    //return processMoveLeftReference(buffer_frame, width, height, offset);
 
     // for each row, shift right by offset
     for (int row = 0; row < height; row++) {
@@ -124,10 +125,16 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
                                int rotate_iteration) {
     // handle negative offsets
     if (rotate_iteration < 0){
-        return processRotateCCW(buffer_frame, width, height, rotate_iteration * -1);
-    }
-
-    if (rotate_iteration%4 == 1) {
+        if (rotate_iteration%4 == 1) {
+            rotate_iteration = 3;
+        } else if (rotate_iteration%4 == 2) {
+            rotate_iteration = 2;
+        } else if (rotate_iteration%4 == 3) {
+            rotate_iteration = 1;
+        } else {
+            return buffer_frame;
+        }
+    } else if (rotate_iteration%4 == 1) {
         rotate_iteration = 1;
     } else if (rotate_iteration%4 == 2) {
         rotate_iteration = 2;
