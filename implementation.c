@@ -127,7 +127,7 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
     } else if (rotate_iteration%4 == 3) {
         rotate_iteration = 3;
     } else {
-        rotate_iteration = 0;
+        return buffer_frame;
     }
 
     int render_col = width-1;
@@ -173,6 +173,28 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
             }
             break;
         case 3:
+            for (int row = 0; row < width/2; row++) {
+                for (int column = 0; column < height/2; column++) {
+                    int render_pos_a = render_row*width*3 + render_col*3;
+                    int render_pos_b = (height-row-1)*width*3 + (width-column-1)*3;
+                    int render_pos_c = (height-render_row-1)*width*3 + (width-render_col-1)*3;
+                    int original_pos = row*width*3 + column*3;
+
+                    // save original pixel to temp
+                    memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+                    // copy pixel a to original pixel
+                    memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
+                    // copy pixel b to pixel a
+                    memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
+                    // // copy pixel c to pixel b
+                    memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
+                    // // copy temp to pixel c
+                    memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
+                    render_row++;
+                }
+                render_row = 0;
+                render_col--;
+            }
             break;
         default:
             break;
@@ -206,7 +228,7 @@ unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, uns
         } else if (rotate_iteration%4 == 3) {
             rotate_iteration = 1;
         } else {
-            rotate_iteration = 0;
+            return buffer_frame;
         }
 
         // rotating 90 degrees counter clockwise is equivalent of rotating 270 degrees clockwise
