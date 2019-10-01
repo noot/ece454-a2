@@ -132,18 +132,17 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
 
     int render_col = width-1;
     int render_row = 0;
+    int width_pixels = width*3;
     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
 
     switch(rotate_iteration) {
-        case 0:
-            return buffer_frame;
         case 1:
             for (int row = 0; row < width/2; row++) {
                 for (int column = 0; column < height/2; column++) {
-                    int render_pos_a = render_row*width*3 + render_col*3;
-                    int render_pos_b = (height-row-1)*width*3 + (width-column-1)*3;
-                    int render_pos_c = (height-render_row-1)*width*3 + (width-render_col-1)*3;
-                    int original_pos = row*width*3 + column*3;
+                    int render_pos_a = render_row*width_pixels + render_col*3;
+                    int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+                    int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+                    int original_pos = row*width_pixels + column*3;
 
                     // save original pixel to temp
                     memcpy(tmp_pixel, buffer_frame + original_pos, 3);
@@ -164,8 +163,8 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
         case 2:
             for (int row = 0; row < width/2; row++) {
                 for (int column = 0; column < height; column++) {
-                    int render_pos = (height-row-1)*width*3 + (width-column-1)*3;
-                    int original_pos = row*width*3 + column*3;
+                    int render_pos = (height-row-1)*width_pixels + (width-column-1)*3;
+                    int original_pos = row*width_pixels + column*3;
                     memcpy(tmp_pixel, buffer_frame + original_pos, 3);
                     memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
                     memcpy(buffer_frame + render_pos, tmp_pixel, 3);
@@ -175,10 +174,10 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
         case 3:
             for (int row = 0; row < width/2; row++) {
                 for (int column = 0; column < height/2; column++) {
-                    int render_pos_a = render_row*width*3 + render_col*3;
-                    int render_pos_b = (height-row-1)*width*3 + (width-column-1)*3;
-                    int render_pos_c = (height-render_row-1)*width*3 + (width-render_col-1)*3;
-                    int original_pos = row*width*3 + column*3;
+                    int render_pos_a = render_row*width_pixels + render_col*3;
+                    int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+                    int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+                    int original_pos = row*width_pixels + column*3;
 
                     // save original pixel to temp
                     memcpy(tmp_pixel, buffer_frame + original_pos, 3);
@@ -248,13 +247,15 @@ unsigned char *processRotateCCW(unsigned char *buffer_frame, unsigned width, uns
  **********************************************************************************************************************/
 unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, unsigned int height, int _unused) {
     unsigned char *temp_row = (unsigned char*)malloc(width*3*sizeof(char));
+    int width_pixels = width*3;
+
     for (int row = 0; row < height/2; row++) {
         // copy row from top half of frame to temp
-        memcpy(temp_row, buffer_frame+row*width*3, width*3);
+        memcpy(temp_row, buffer_frame+row*width_pixels, width_pixels);
         // copy row from bottom half to top half of frame
-        memcpy(buffer_frame+row*width*3, buffer_frame+(height-row-1)*width*3, width*3);
+        memcpy(buffer_frame+row*width_pixels, buffer_frame+(height-row-1)*width_pixels, width_pixels);
         // copy row that was saved from top half to bottom half
-        memcpy(buffer_frame+(height-row-1)*width*3, temp_row, width*3);
+        memcpy(buffer_frame+(height-row-1)*width_pixels, temp_row, width_pixels);
     }
 
     free(temp_row);
@@ -272,11 +273,12 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
  **********************************************************************************************************************/
 unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsigned height, int _unused) {
     unsigned char *temp_row = (unsigned char*)malloc((width/2)*3*sizeof(char));
+    int width_pixels = width*3;
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width/2; col++) {
-            int right_pos = row*width*3 + (width-col-1)*3;
-            int left_pos = row*width*3 + col*3;
+            int right_pos = row*width_pixels + (width-col-1)*3;
+            int left_pos = row*width_pixels + col*3;
             // copy right side of row into temp in reverse order
             memcpy(temp_row + col, buffer_frame + right_pos, 3);
             // copy left side of buffer row into right side of buffer row in reverse order
