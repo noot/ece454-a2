@@ -162,12 +162,23 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
             }
             break;
         case 2:
+            for (int row = 0; row < width/2; row++) {
+                for (int column = 0; column < height; column++) {
+                    int render_pos = (height-row-1)*width*3 + (width-column-1)*3;
+                    int original_pos = row*width*3 + column*3;
+                    memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+                    memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
+                    memcpy(buffer_frame + render_pos, tmp_pixel, 3);
+                }
+            }
             break;
         case 3:
             break;
         default:
             break;
     }
+
+    free(tmp_pixel);
 
     // return a pointer to the updated image buffer
     return buffer_frame;
