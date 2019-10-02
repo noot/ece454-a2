@@ -496,6 +496,85 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
     return optimized_sensor_values;
 }
 
+// remove whitespace around edges, keeps the image as a square
+// note width=height so new_width=new_height
+unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width, unsigned int height, unsigned int *new_width) {
+    int current_removeable_pixels = 0;
+    unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
+    memset(white_row, 255, width*3);
+
+    // check for whitespace at top
+    for (int row = 0; row < height; row++) {
+        if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            current_removeable_pixels = row;
+            break;
+        }
+    }
+
+    // check for whitespace at bottom
+    for (int row = height - 1; row >= 0; row--) {
+         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
+            break;
+        }       
+    }
+
+    // rotate CW 90 degrees, check whitespace at top and bottom
+    frame_buffer = processRotateCW(frame_buffer, width, height, 1);
+
+    // check for whitespace at top (actually left)
+    for (int row = 0; row < height; row++) {
+        if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > row) current_removeable_pixels = row;
+            break;
+        }
+    }
+
+    // check for whitespace at bottom (actually right)
+    for (int row = height - 1; row >= 0; row--) {
+         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
+            break;
+        }       
+    }
+
+    // rotate back CCW
+    frame_buffer = processRotateCCW(frame_buffer, width, height, 1);
+
+    // remove excess whitespace
+    unsigned int updated_width = width - (current_removeable_pixels*2); // = new_height
+    unsigned char *new_frame_buffer = (unsigned char*)malloc(updated_width*updated_width*3*sizeof(char));
+    if (new_frame_buffer == NULL) {
+        printf("error allocating for new frame buffer\n");
+        return NULL;
+    }
+
+    int new_row = 0;
+    for (int row = current_removeable_pixels-1; row < height-current_removeable_pixels-1; row++) {
+        //printf("moving row %d\n", row);
+        memcpy(new_frame_buffer + new_row*updated_width*3, frame_buffer + row*width*3 + (current_removeable_pixels-1)*3, updated_width*3);
+        new_row++;
+    }
+   
+    *new_width = updated_width;
+
+    return new_frame_buffer;
+}
+
+unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned int original_width, unsigned int new_width) {
+    unsigned char *frame_buffer = (unsigned char*)malloc(new_width*new_width*3*sizeof(unsigned char));
+    int num_removed_rows = (original_width-new_width)/2; // or columns
+    memset(frame_buffer, 255, original_width*3*num_removed_rows);
+    memset(frame_buffer + (original_width-num_removed_rows)*3, 255, original_width*3*num_removed_rows);
+
+    for (int row = num_removed_rows; row < original_width-num_removed_rows; row++) {
+        memset(frame_buffer + row*original_width*3, 255, num_removed_rows*3);
+        memcpy(frame_buffer + row*original_width*3 + num_removed_rows*3, optimized_frame_buffer + row*new_width*3, new_width*3);
+        memset(frame_buffer + row*original_width*3 + num_removed_rows*3 + new_width*3, 255, num_removed_rows*3);
+    }
+
+    return frame_buffer;
+}
 /***********************************************************************************************************************
  * WARNING: Do not modify the implementation_driver and team info prototype (name, parameter, return value) !!!
  *          You can modify anything else in this file
@@ -515,6 +594,9 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
 
     int new_count;
     okv *new_kv = optimize_sensor_values(sensor_values, sensor_values_count, &new_count);
+
+    int new_width;
+    unsigned char *new_frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
 
     for (int i = 0; i < new_count; i++) {
         switch (new_kv[i].m) {
@@ -550,7 +632,9 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
         }
     }
 
+    //frame_buffer = readd_whitespace(new_frame_buffer, width, new_width);
     free(new_kv);
+    free(new_frame_buffer);
 
 //     for (int sensorValueIdx = 0; sensorValueIdx < sensor_values_count; sensorValueIdx++) {
 // //        printf("Processing sensor value #%d: %s, %d\n", sensorValueIdx, sensor_values[sensorValueIdx].key,
