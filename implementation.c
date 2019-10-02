@@ -557,11 +557,15 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     }
    
     *new_width = updated_width;
+    free(white_row);
+    //  free(frame_buffer);
 
     return new_frame_buffer;
 }
 
 unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned int original_width, unsigned int new_width) {
+    //return optimized_frame_buffer;
+
     unsigned char *frame_buffer = (unsigned char*)malloc(new_width*new_width*3*sizeof(unsigned char));
     int num_removed_rows = (original_width-new_width)/2; // or columns
     memset(frame_buffer, 255, original_width*3*num_removed_rows);
@@ -573,6 +577,7 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
         memset(frame_buffer + row*original_width*3 + num_removed_rows*3 + new_width*3, 255, num_removed_rows*3);
     }
 
+    //free(optimized_frame_buffer);
     return frame_buffer;
 }
 /***********************************************************************************************************************
@@ -595,8 +600,10 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
     int new_count;
     okv *new_kv = optimize_sensor_values(sensor_values, sensor_values_count, &new_count);
 
-    int new_width;
-    unsigned char *new_frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+    // int new_width;
+    // frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+    // width = new_width;
+    // height = new_width;
 
     for (int i = 0; i < new_count; i++) {
         switch (new_kv[i].m) {
@@ -625,16 +632,17 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 frame_buffer = processMirrorY(frame_buffer, width, height, new_kv[i].value);
                 break;
             case VERIFY:
+                //frame_buffer = readd_whitespace(frame_buffer, width, new_width);
                 verifyFrame(frame_buffer, width, height, grading_mode);
+                //frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
                 break;    
             default: 
                 break;    
         }
     }
 
-    //frame_buffer = readd_whitespace(new_frame_buffer, width, new_width);
-    free(new_kv);
-    free(new_frame_buffer);
+    // free(new_kv);
+    // free(frame_buffer);
 
 //     for (int sensorValueIdx = 0; sensorValueIdx < sensor_values_count; sensorValueIdx++) {
 // //        printf("Processing sensor value #%d: %s, %d\n", sensorValueIdx, sensor_values[sensorValueIdx].key,
