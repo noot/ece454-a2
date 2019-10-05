@@ -468,16 +468,19 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
     unsigned char *temp_row = (unsigned char*)malloc(width*3*sizeof(char));
     int width_pixels = width*3;
 
-    // unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
-    // memset(white_row, 255, width*3);
+    unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
+    memset(white_row, 255, width*3);
 
     for (int row = 0; row < height>>1; row++) {
-        // copy row from top half of frame to temp
-        memcpy(temp_row, buffer_frame+row*width_pixels, width_pixels);
-        // copy row from bottom half to top half of frame
-        memcpy(buffer_frame+row*width_pixels, buffer_frame+(height-row-1)*width_pixels, width_pixels);
-        // copy row that was saved from top half to bottom half
-        memcpy(buffer_frame+(height-row-1)*width_pixels, temp_row, width_pixels);
+        if (memcmp(buffer_frame + row*width_pixels, white_row, width_pixels) != 0 ||
+            memcmp(buffer_frame + (height-row-1)*width_pixels, white_row, width_pixels) != 0 ) {
+            // copy row from top half of frame to temp
+            memcpy(temp_row, buffer_frame+row*width_pixels, width_pixels);
+            // copy row from bottom half to top half of frame
+            memcpy(buffer_frame+row*width_pixels, buffer_frame+(height-row-1)*width_pixels, width_pixels);
+            // copy row that was saved from top half to bottom half
+            memcpy(buffer_frame+(height-row-1)*width_pixels, temp_row, width_pixels);
+        }
     }
 
     free(temp_row);
