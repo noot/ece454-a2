@@ -124,8 +124,8 @@ unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned int width
     unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
     memset(white_pixel, 255, 3);
 
-    for (int row = 0; row <= width>>1; row++) {
-        for (int column = 0; column < height>>1; column++) {
+    for (int row = 0; row < width>>1; row++) {
+        for (int column = 0; column <= height>>1; column++) {
             int render_pos_a = render_row*width_pixels + render_col*3;
             int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
@@ -302,17 +302,18 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
         case 1:
             for (int subsquare_index = 0; subsquare_index < num_divisions*num_divisions; subsquare_index++) {
                 unsigned char *rotated_subsquare = subsquares[subsquare_index];
-
-                rotated_subsquare = rotateSubsquareCW(rotated_subsquare, subsquare_width);
+                // /if (isSubsquareWhite(rotated_subsquare, subsquare_width)) break;
+                //rotated_subsquare = rotateSubsquareCW(rotated_subsquare, subsquare_width);
 
                 int subsquare_row_position = subsquare_index/num_divisions; // 0
                 int subsquare_col_position = subsquare_index%num_divisions; // 1
                 int start_row = subsquare_row_position*subsquare_width; //0
                 int start_column = subsquare_col_position*subsquare_width; // 5
-                for (int row = 0; row < subsquare_width; row++) {
-                    memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
-                }
+                // for (int row = 0; row < subsquare_width; row++) {
+                //     memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
+                // }
 
+                //break;
                 if (subsquare_row_position < num_divisions/2 && subsquare_col_position < num_divisions/2) {
                     // subsquare in upper left half
                     // need to move subsquare to position in upper right half of buffer_frame
@@ -335,9 +336,9 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
                     start_row = subsquare_row_position*subsquare_width; //5
                }
 
-                // for (int row = 0; row < subsquare_width; row++) {
-                //     memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
-                // }
+                for (int row = 0; row < subsquare_width; row++) {
+                    memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
+                }
             }
             //buffer_frame = rotateSubsquareCW(buffer_frame, width);
             break;
