@@ -114,30 +114,38 @@ unsigned char *processMoveLeft(unsigned char *buffer_frame, unsigned width, unsi
     return buffer_frame;
 }
 
-unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned width) {
+unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned int width) {
     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
     int render_col = width-1;
     int render_row = 0;
     int width_pixels = width*3;
     int height = width;
 
-      for (int row = 0; row < width>>1; row++) {
+    unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
+    memset(white_pixel, 255, 3);
+
+    for (int row = 0; row <= width>>1; row++) {
         for (int column = 0; column < height>>1; column++) {
             int render_pos_a = render_row*width_pixels + render_col*3;
             int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
             int original_pos = row*width_pixels + column*3;
 
-            // save original pixel to temp
-            memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-            // copy pixel c to original pixel
-            memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
-            // copy pixel b to pixel c
-            memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
-            // // copy pixel a to pixel b
-            memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
-            // // copy temp to pixel a
-            memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
+            // if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+                // save original pixel to temp
+                memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+                // copy pixel c to original pixel
+                memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
+                // copy pixel b to pixel c
+                memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
+                // // copy pixel a to pixel b
+                memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
+                // // copy temp to pixel a
+                memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
+            //}
             render_row++;
         }
         render_row = 0;
@@ -148,31 +156,39 @@ unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned width) {
     return buffer_frame;
 }
 
-unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned width) {
+unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned int width) {
     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
     int render_col = width-1;
     int render_row = 0;
     int width_pixels = width*3;
     int height = width;
+    unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
 
-    for (int row = 0; row < width>>1; row++) {
+    for (int row = 0; row <= width>>1; row++) {
         for (int column = 0; column < height>>1; column++) {
             int render_pos_a = render_row*width_pixels + render_col*3;
             int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
             int original_pos = row*width_pixels + column*3;
 
-            // save original pixel to temp
-            memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-            // copy pixel a to original pixel
-            memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
-            // copy pixel b to pixel a
-            memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
-            // // copy pixel c to pixel b
-            memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
-            // // copy temp to pixel c
-            memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
-            render_row++;
+
+            if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+                memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+                memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+                memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+
+                // save original pixel to temp
+                memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+                // copy pixel a to original pixel
+                memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
+                // copy pixel b to pixel a
+                memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
+                // // copy pixel c to pixel b
+                memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
+                // // copy temp to pixel c
+                memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
+                render_row++;
+            }
         }
         render_row = 0;
         render_col--;
@@ -182,7 +198,7 @@ unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned width) {
     return buffer_frame;
 }
 
-unsigned char *rotateSubsquare180(unsigned char *buffer_frame, unsigned width) {
+unsigned char *rotateSubsquare180(unsigned char *buffer_frame, unsigned int width) {
     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
     int width_pixels = width*3;
     int height = width;
@@ -213,28 +229,29 @@ bool isSubsquareWhite(unsigned char *buffer_frame, unsigned width) {
 // subsquares array is arranged in row-order
 // eg. buffer_frame: 
 //  ___ ___ ___
-// |_1_|_2_|_3_|
+// |_0_|_1_|_2_|
 // |_4_|_5_|_6_|
 // |_7_|_8_|_9_|
 // 
-// num_divisions = 3; subsquares: | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+// num_divisions = 3; subsquares: | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 
 unsigned char **divideIntoSubsquares(unsigned char *buffer_frame, unsigned width, unsigned num_divisions) {
     unsigned char **subsquares = (unsigned char**)malloc(num_divisions*num_divisions*sizeof(unsigned char*));
     int subsquare_width = width/num_divisions;
-    int excess = width%num_divisions;
+    // int excess = width%num_divisions;
     // int middle_index = num_divisions/2;
 
     // let's add excess pixels to the middle subsquare to make things easier for rotation
-    // assume num_divisions is odd for now
 
     for (int i = 0; i < num_divisions*num_divisions; i++) {
         subsquares[i] = (unsigned char*)malloc(subsquare_width*subsquare_width*3*sizeof(unsigned char));
         unsigned char *ss = subsquares[i];
-        int column = (i%num_divisions) * subsquare_width*3;
+        int column = (i%num_divisions) * subsquare_width;
         // copy row by row into subsquare
         for (int row = 0; row < subsquare_width; row++) {
-            memcpy(ss, buffer_frame + ((i*subsquare_width/num_divisions)+row)*width*3 + column, subsquare_width);
+            int row_within_buffer_frame = i*subsquare_width/num_divisions;
+            memcpy(ss + row*subsquare_width*3, buffer_frame + (row_within_buffer_frame+row)*width*3 + column*3, subsquare_width*3);
         }
+        subsquares[i] = ss;
     }
 
     return subsquares;
@@ -277,71 +294,124 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
     int width_pixels = width*3;
     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
 
+    unsigned int num_divisions = 2;
+    unsigned char **subsquares = divideIntoSubsquares(buffer_frame, width, num_divisions);
+    int subsquare_width = width/num_divisions;
+
     switch(rotate_iteration) {
         case 1:
-            for (int row = 0; row < width>>1; row++) {
-                for (int column = 0; column < height>>1; column++) {
-                    int render_pos_a = render_row*width_pixels + render_col*3;
-                    int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
-                    int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
-                    int original_pos = row*width_pixels + column*3;
+            for (int subsquare_index = 0; subsquare_index < num_divisions*num_divisions; subsquare_index++) {
+                unsigned char *rotated_subsquare = subsquares[subsquare_index];
 
-                    // save original pixel to temp
-                    memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-                    // copy pixel c to original pixel
-                    memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
-                    // copy pixel b to pixel c
-                    memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
-                    // // copy pixel a to pixel b
-                    memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
-                    // // copy temp to pixel a
-                    memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
-                    render_row++;
+                rotated_subsquare = rotateSubsquareCW(rotated_subsquare, subsquare_width);
+
+                int subsquare_row_position = subsquare_index/num_divisions; // 0
+                int subsquare_col_position = subsquare_index%num_divisions; // 1
+                int start_row = subsquare_row_position*subsquare_width; //0
+                int start_column = subsquare_col_position*subsquare_width; // 5
+                for (int row = 0; row < subsquare_width; row++) {
+                    memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
                 }
-                render_row = 0;
-                render_col--;
+
+                if (subsquare_row_position < num_divisions/2 && subsquare_col_position < num_divisions/2) {
+                    // subsquare in upper left half
+                    // need to move subsquare to position in upper right half of buffer_frame
+                    start_column = (num_divisions - subsquare_col_position - 1)*subsquare_width; // 1 * 5  5;
+                    start_row = subsquare_row_position*subsquare_width; // 0
+                } else if (subsquare_row_position < num_divisions/2 && subsquare_col_position >= num_divisions/2) {
+                    // subsquare in upper right half
+                    // need to move subsquare to bottom right half
+                    start_column = subsquare_col_position*subsquare_width; // 1 *5 = 5;
+                    start_row = (num_divisions - subsquare_row_position - 1)*subsquare_width; // 1*5=5;
+               } else if (subsquare_row_position >= num_divisions/2 && subsquare_col_position < num_divisions/2) {
+                    // subsquare in bottom left half
+                    // need to move subsquare to top left half
+                    start_column = subsquare_col_position*subsquare_width;// 5
+                    start_row = (num_divisions - subsquare_row_position - 1)*subsquare_width; // 0
+               } else if (subsquare_row_position >= num_divisions/2 && subsquare_col_position >= num_divisions/2) {
+                    // subsquare in bottom right half
+                    // need to move subsquare to bottom left half
+                    start_column = (num_divisions - subsquare_col_position - 1)*subsquare_width;//0
+                    start_row = subsquare_row_position*subsquare_width; //5
+               }
+
+                // for (int row = 0; row < subsquare_width; row++) {
+                //     memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
+                // }
             }
+            //buffer_frame = rotateSubsquareCW(buffer_frame, width);
             break;
+
+            // for (int row = 0; row < width>>1; row++) {
+            //     for (int column = 0; column < height>>1; column++) {
+            //         int render_pos_a = render_row*width_pixels + render_col*3;
+            //         int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+            //         int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+            //         int original_pos = row*width_pixels + column*3;
+
+            //         // save original pixel to temp
+            //         memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+            //         // copy pixel c to original pixel
+            //         memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
+            //         // copy pixel b to pixel c
+            //         memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
+            //         // // copy pixel a to pixel b
+            //         memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
+            //         // // copy temp to pixel a
+            //         memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
+            //         render_row++;
+            //     }
+            //     render_row = 0;
+            //     render_col--;
+            // }
+            // break;
         case 2:
-            for (int row = 0; row < width>>1; row++) {
-                for (int column = 0; column < height; column++) {
-                    int render_pos = (height-row-1)*width_pixels + (width-column-1)*3;
-                    int original_pos = row*width_pixels + column*3;
-                    memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-                    memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
-                    memcpy(buffer_frame + render_pos, tmp_pixel, 3);
-                }
-            }
+            buffer_frame = rotateSubsquare180(buffer_frame, width);
             break;
-        case 3:
-            for (int row = 0; row < width>>1; row++) {
-                for (int column = 0; column < height>>1; column++) {
-                    int render_pos_a = render_row*width_pixels + render_col*3;
-                    int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
-                    int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
-                    int original_pos = row*width_pixels + column*3;
 
-                    // save original pixel to temp
-                    memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-                    // copy pixel a to original pixel
-                    memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
-                    // copy pixel b to pixel a
-                    memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
-                    // // copy pixel c to pixel b
-                    memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
-                    // // copy temp to pixel c
-                    memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
-                    render_row++;
-                }
-                render_row = 0;
-                render_col--;
-            }
+            // for (int row = 0; row < width>>1; row++) {
+            //     for (int column = 0; column < height; column++) {
+            //         int render_pos = (height-row-1)*width_pixels + (width-column-1)*3;
+            //         int original_pos = row*width_pixels + column*3;
+            //         memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+            //         memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
+            //         memcpy(buffer_frame + render_pos, tmp_pixel, 3);
+            //     }
+            // }
+            // break;
+        case 3:
+            buffer_frame = rotateSubsquareCCW(buffer_frame, width);
             break;
+
+            // for (int row = 0; row < width>>1; row++) {
+            //     for (int column = 0; column < height>>1; column++) {
+            //         int render_pos_a = render_row*width_pixels + render_col*3;
+            //         int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+            //         int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+            //         int original_pos = row*width_pixels + column*3;
+
+            //         // save original pixel to temp
+            //         memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+            //         // copy pixel a to original pixel
+            //         memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
+            //         // copy pixel b to pixel a
+            //         memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
+            //         // // copy pixel c to pixel b
+            //         memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
+            //         // // copy temp to pixel c
+            //         memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
+            //         render_row++;
+            //     }
+            //     render_row = 0;
+            //     render_col--;
+            // }
+            // break;
         default:
             break;
     }
 
     free(tmp_pixel);
+    free(subsquares);
 
     // return a pointer to the updated image buffer
     return buffer_frame;
@@ -741,7 +811,9 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 frame_buffer = processMoveDown(frame_buffer, width, height, new_kv[i].value);
                 break;
             case CW:
+                //printBMP(width, height, frame_buffer);
                 frame_buffer = processRotateCW(frame_buffer, width, height, new_kv[i].value);
+                //printBMP(width, height, frame_buffer);
                 break;
             case CCW:
                 frame_buffer = processRotateCCW(frame_buffer, width, height, new_kv[i].value);
@@ -753,6 +825,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 frame_buffer = processMirrorY(frame_buffer, width, height, new_kv[i].value);
                 break;
             case VERIFY:
+                printBMP(width, height, frame_buffer);
                 verifyFrame(frame_buffer, width, height, grading_mode);
                 break;    
             default: 
