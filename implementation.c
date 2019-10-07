@@ -500,19 +500,24 @@ unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsig
     unsigned char *temp_row = (unsigned char*)malloc((width>>1)*3*sizeof(char));
     int width_pixels = width*3;
 
+    unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
+    memset(white_row, 255, width*3);
+
     for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width>>1; col++) {
-            int right_pos = row*width_pixels + (width-col-1)*3;
-            int left_pos = row*width_pixels + col*3;
-            // copy right side of row into temp in reverse order
-            memcpy(temp_row + col, buffer_frame + right_pos, 3);
-            // copy left side of buffer row into right side of buffer row in reverse order
-            memcpy(buffer_frame + right_pos, buffer_frame + left_pos, 3);
-            // copy temp pixel back into left side of buffer
-            memcpy(buffer_frame + left_pos, temp_row + col, 3);
+        if (memcmp(buffer_frame + row*width_pixels, white_row, width_pixels) != 0) {
+            for (int col = 0; col < width>>1; col++) {
+                int right_pos = row*width_pixels + (width-col-1)*3;
+                int left_pos = row*width_pixels + col*3;
+                // copy right side of row into temp in reverse order
+                memcpy(temp_row + col, buffer_frame + right_pos, 3);
+                // copy left side of buffer row into right side of buffer row in reverse order
+                memcpy(buffer_frame + right_pos, buffer_frame + left_pos, 3);
+                // copy temp pixel back into left side of buffer
+                memcpy(buffer_frame + left_pos, temp_row + col, 3);
+            }
+            // copy temp half-row which contains new left side back into left half of buffer
+            //memcpy(buffer_frame + row*width_pixels, temp_row, width_pixels/2);
         }
-        // copy temp half-row which contains new left side back into left half of buffer
-        //memcpy(buffer_frame + row*width_pixels, temp_row, width_pixels/2);
     }
 
     free(temp_row);
