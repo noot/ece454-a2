@@ -17,7 +17,7 @@ void printBMP(unsigned width, unsigned height, unsigned char *frame_buffer) {
     for (row = 0; row < height; row++) {
         for (column = 0; column < width; column++) {
             location = ((width * 3) * row) + (column * 3);
-            printf("[%03d,%03d,%03d]", frame_buffer[location], frame_buffer[location + 1], frame_buffer[location + 2]);
+            printf("[%02x,%02x,%02x]", frame_buffer[location], frame_buffer[location + 1], frame_buffer[location + 2]);
         }
         printf("\n");
     }

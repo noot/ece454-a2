@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 
     printf("*******************************************************************************************************\n");
 //    printf("initial bmp\n");
-//    printBMP(width, height, frame_buffer);
+    //printBMP(width, height, frame_buffer);
 
     // Measure the performance of student's solution
     unsigned char *frame_copy = allocateFrame(width, height);
@@ -282,6 +282,7 @@ int main(int argc, char **argv) {
     implementation_driver_reference(sensor_values, sensor_values_count, frame_copy, width, height, false);
     copyFrame(frame_buffer, frame_copy, width, height);
     implementation_driver(sensor_values, sensor_values_count, frame_copy, width, height, false);
+    //printBMP(width, height, frame_copy);
     verifiedAllFrames();
 
     return 0;
