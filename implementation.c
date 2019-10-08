@@ -711,83 +711,82 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
 
 // // remove whitespace around edges, keeps the image as a square
 // // note width=height so new_width=new_height
-// unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width, unsigned int height, unsigned int *new_width) {
-//     int current_removeable_pixels = 0;
-//     unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
-//     memset(white_row, 255, width*3);
+unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width, unsigned int height, unsigned int *new_width) {
+    int current_removeable_pixels = 0;
+    unsigned char *white_row = (unsigned char*)malloc(width*3*sizeof(unsigned char));
+    memset(white_row, 255, width*3);
 
-//     // check for whitespace at top
-//     for (int row = 0; row < height; row++) {
-//         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
-//             current_removeable_pixels = row;
-//             break;
-//         }
-//     }
+    // check for whitespace at top
+    for (int row = 0; row < height; row++) {
+        if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            current_removeable_pixels = row;
+            break;
+        }
+    }
 
-//     // check for whitespace at bottom
-//     for (int row = height - 1; row >= 0; row--) {
-//          if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
-//             if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
-//             break;
-//         }       
-//     }
+    // check for whitespace at bottom
+    for (int row = height - 1; row >= 0; row--) {
+         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
+            break;
+        }       
+    }
 
-//     // rotate CW 90 degrees, check whitespace at top and bottom
-//     frame_buffer = processRotateCW(frame_buffer, width, height, 1);
+    // rotate CW 90 degrees, check whitespace at top and bottom
+    frame_buffer = processRotateCW(frame_buffer, width, height, 1);
 
-//     // check for whitespace at top (actually left)
-//     for (int row = 0; row < height; row++) {
-//         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
-//             if (current_removeable_pixels > row) current_removeable_pixels = row;
-//             break;
-//         }
-//     }
+    // check for whitespace at top (actually left)
+    for (int row = 0; row < height; row++) {
+        if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > row) current_removeable_pixels = row;
+            break;
+        }
+    }
 
-//     // check for whitespace at bottom (actually right)
-//     for (int row = height - 1; row >= 0; row--) {
-//          if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
-//             if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
-//             break;
-//         }       
-//     }
+    // check for whitespace at bottom (actually right)
+    for (int row = height - 1; row >= 0; row--) {
+         if (memcmp(white_row, frame_buffer + row*width*3, width*3) != 0) {
+            if (current_removeable_pixels > height-row-1) current_removeable_pixels = height-row-1;
+            break;
+        }       
+    }
 
-//     // rotate back CCW
-//     frame_buffer = processRotateCCW(frame_buffer, width, height, 1);
+    // rotate back CCW
+    frame_buffer = processRotateCCW(frame_buffer, width, height, 1);
 
-//     // remove excess whitespace
-//     unsigned int updated_width = width - (current_removeable_pixels*2); // = new_height
-//     unsigned char *new_frame_buffer = (unsigned char*)malloc(updated_width*updated_width*3*sizeof(char));
-//     if (new_frame_buffer == NULL) {
-//         printf("error allocating for new frame buffer\n");
-//         return NULL;
-//     }
+    // remove excess whitespace
+    unsigned int updated_width = width - (current_removeable_pixels*2); // = new_height
+    unsigned char *new_frame_buffer = (unsigned char*)malloc(updated_width*updated_width*3*sizeof(char));
+    if (new_frame_buffer == NULL) {
+        printf("error allocating for new frame buffer\n");
+        return NULL;
+    }
 
-//     int new_row = 0;
-//     for (int row = current_removeable_pixels-1; row < height-current_removeable_pixels-1; row++) {
-//         //printf("moving row %d\n", row);
-//         memcpy(new_frame_buffer + new_row*updated_width*3, frame_buffer + row*width*3 + (current_removeable_pixels-1)*3, updated_width*3);
-//         new_row++;
-//     }
+    int new_row = 0;
+    for (int row = current_removeable_pixels-1; row < height-current_removeable_pixels-1; row++) {
+        //printf("moving row %d\n", row);
+        memcpy(new_frame_buffer + new_row*updated_width*3, frame_buffer + row*width*3 + (current_removeable_pixels)*3, updated_width*3);
+        new_row++;
+    }
 
-//     *new_width = updated_width;
+    *new_width = updated_width;
 
-//     return new_frame_buffer;
-// }
+    return new_frame_buffer;
+}
 
-// unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned int original_width, unsigned int new_width) {
-//     unsigned char *frame_buffer = (unsigned char*)malloc(new_width*new_width*3*sizeof(unsigned char));
-//     int num_removed_rows = (original_width-new_width)/2; // or columns
-//     memset(frame_buffer, 255, original_width*3*num_removed_rows);
-//     memset(frame_buffer + (original_width-num_removed_rows)*3, 255, original_width*3*num_removed_rows);
+// readd whitespace to sides with x_offset and y_offset
+unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned int original_width, unsigned int new_width, int x_offset, int y_offset) {
+    unsigned char *frame_buffer = (unsigned char*)malloc(original_width*original_width*3*sizeof(unsigned char));
+    int num_removed_rows = (original_width-new_width)/2; // or columns
+    memset(frame_buffer, 255, original_width*original_width*3);
+    //memset(frame_buffer + (original_width-num_removed_rows)*3, 255, original_width*3*num_removed_rows);
 
-//     for (int row = num_removed_rows; row < original_width-num_removed_rows; row++) {
-//         memset(frame_buffer + row*original_width*3, 255, num_removed_rows*3);
-//         memcpy(frame_buffer + row*original_width*3 + num_removed_rows*3, optimized_frame_buffer + row*new_width*3, new_width*3);
-//         memset(frame_buffer + row*original_width*3 + num_removed_rows*3 + new_width*3, 255, num_removed_rows*3);
-//     }
+    for (int row = num_removed_rows; row < original_width-num_removed_rows-y_offset-1; row++) {
+        memcpy(frame_buffer + row*original_width*3 + num_removed_rows*3 + x_offset*3, optimized_frame_buffer + (row+y_offset)*new_width*3 , new_width*3);
+    }
 
-//     return frame_buffer;
-// }
+    return frame_buffer;
+}
 
 /***********************************************************************************************************************
  * WARNING: Do not modify the implementation_driver and team info prototype (name, parameter, return value) !!!
@@ -809,22 +808,29 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
     int new_count;
     okv *new_kv = optimize_sensor_values(sensor_values, sensor_values_count, &new_count);
 
-    //int new_width;
-    //unsigned char *new_frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+    int new_width;
+    int x_offset = 0;
+    int y_offset = 0;
+    frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+    //printBMP(new_width, new_width, frame_buffer);
 
     for (int i = 0; i < new_count; i++) {
         switch (new_kv[i].m) {
             case A: // left 
-                frame_buffer = processMoveLeft(frame_buffer, width, height, new_kv[i].value);
+                //frame_buffer = processMoveLeft(frame_buffer, width, height, new_kv[i].value);
+                x_offset -= new_kv[i].value;
                 break;
             case D: // right
-                frame_buffer = processMoveRight(frame_buffer, width, height, new_kv[i].value);
+                //frame_buffer = processMoveRight(frame_buffer, width, height, new_kv[i].value);
+                x_offset += new_kv[i].value;
                 break;
             case W: // up
-                frame_buffer = processMoveUp(frame_buffer, width, height, new_kv[i].value);
+                //frame_buffer = processMoveUp(frame_buffer, width, height, new_kv[i].value);
+                y_offset += new_kv[i].value;
                 break;
             case S: // down
-                frame_buffer = processMoveDown(frame_buffer, width, height, new_kv[i].value);
+                //frame_buffer = processMoveDown(frame_buffer, width, height, new_kv[i].value);
+                y_offset -= new_kv[i].value;
                 break;
             case CW:
                 //printBMP(width, height, frame_buffer);
@@ -841,9 +847,11 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 frame_buffer = processMirrorY(frame_buffer, width, height, new_kv[i].value);
                 break;
             case VERIFY:
+                printf("new_width %d x_offset %d y_offset %d\n", new_width, x_offset, y_offset);
+                frame_buffer = readd_whitespace(frame_buffer, width, new_width, x_offset, y_offset);
                 //printBMP(width, height, frame_buffer);
                 verifyFrame(frame_buffer, width, height, grading_mode);
-                //frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+                frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
                 break;    
             default: 
                 break;    
