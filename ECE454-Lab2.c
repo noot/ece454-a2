@@ -280,9 +280,9 @@ int main(int argc, char **argv) {
     // Check the correctness of student's solution
     copyFrame(frame_buffer, frame_copy, width, height);
     implementation_driver_reference(sensor_values, sensor_values_count, frame_copy, width, height, false);
+    // /printBMP(width, height, frame_copy);
     copyFrame(frame_buffer, frame_copy, width, height);
     implementation_driver(sensor_values, sensor_values_count, frame_copy, width, height, false);
-    //printBMP(width, height, frame_copy);
     verifiedAllFrames();
 
     return 0;
