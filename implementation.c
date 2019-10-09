@@ -679,7 +679,7 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
 
             // collapse all rotations
             if (clockwise_rotation < 0) {
-                optimized_sensor_values[pos].m = CCW;
+                optimized_sensor_values[pos].m = CW;
                 optimized_sensor_values[pos].value = -1*clockwise_rotation;
                 pos++;
             } else if (clockwise_rotation != 0) {
@@ -812,6 +812,7 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
     int start_column = x_offset;
     int end_row = new_width + y_offset;
 
+    // place cropped image on white frame
     int inner_image_row = 0;
     for (int row = start_row; row < end_row; row++) {
         memcpy(frame_buffer + row*original_width*3 + start_column*3, optimized_frame_buffer + inner_image_row*new_width*3 , new_width*3);
@@ -874,12 +875,33 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 //printBMP(width, height, frame_buffer);
                 frame_buffer = processRotateCW(frame_buffer, width, height, new_kv[i].value);
                 //printBMP(width, height, frame_buffer);
-                int tmp = x_offset;
-                x_offset = -1*y_offset;
-                y_offset = tmp;
+                if (new_kv[i].value == 1) {
+                    int tmp = x_offset;
+                    x_offset = -1*y_offset;
+                    y_offset = tmp;
+                } else if (new_kv[i].value == 2) {
+                    y_offset = -1*y_offset;
+                    x_offset = -1*x_offset;
+                } else {
+                    int tmp = x_offset;
+                    x_offset = y_offset;
+                    y_offset = -1*tmp;   
+                }
                 break;
             case CCW:
                 frame_buffer = processRotateCCW(frame_buffer, width, height, new_kv[i].value);
+                if (new_kv[i].value == 1) {
+                    int tmp = x_offset;
+                    x_offset = y_offset;
+                    y_offset = -1*tmp; 
+                } else if (new_kv[i].value == 2) {
+                    y_offset = -1*y_offset;
+                    x_offset = -1*x_offset;
+                } else {
+                    int tmp = x_offset;
+                    x_offset = -1*y_offset;
+                    y_offset = tmp;
+                }
                 break;
             case MX:
                 frame_buffer = processMirrorX(frame_buffer, width, height, new_kv[i].value);
