@@ -785,9 +785,9 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
         begin_image_top--;
     }
 
-    // while(width-begin_image_right < updated_width) {
-    //     begin_image_right;
-    // }
+    while(width-begin_image_left < updated_width) {
+        begin_image_left--;
+    }
 
     for (int row = begin_image_top; row < begin_image_top+updated_width; row++) {
         //printf("moving row %d\n", row);
@@ -811,9 +811,6 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
     int start_row = y_offset;
     int start_column = x_offset;
     int end_row = new_width + y_offset;
-
-    //if(start_row<0) start_row = 0;
-    //if(start_column<0) start_column = 0;
 
     // place cropped image on white frame
     int inner_image_row = 0;
@@ -840,8 +837,6 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
  **********************************************************************************************************************/
 void implementation_driver(struct kv *sensor_values, int sensor_values_count, unsigned char *frame_buffer,
                            unsigned int width, unsigned int height, bool grading_mode) {
-    //int processed_frames = 0;
-
     int new_count, left_offset, top_offset;
     okv *new_kv = optimize_sensor_values(sensor_values, sensor_values_count, &new_count);
 
@@ -887,34 +882,43 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
             case CW:
                 //printBMP(width, height, frame_buffer);
                 frame_buffer = processRotateCW(frame_buffer, new_width, new_width, new_kv[i].value);
+                current_rotation += new_kv[i].value;
                 //printBMP(width, height, frame_buffer);
-                if (new_kv[i].value == 1) {
+                if (current_rotation == 1) {
                     int tmp = x_offset;
                     x_offset = -1*y_offset;
                     y_offset = tmp;
-                } else if (new_kv[i].value == 2) {
+                    if (is_mirrored_y) x_offset = -1*x_offset;
+                    if (is_mirrored_x) y_offset = -1*y_offset;
+                } else if (current_rotation == 2) {
                     y_offset = -1*y_offset;
                     x_offset = -1*x_offset;
+                    if (is_mirrored_y) x_offset = -1*x_offset;
+                    if (is_mirrored_x) y_offset = -1*y_offset;
                 } else {
                     int tmp = x_offset;
                     x_offset = y_offset;
                     y_offset = -1*tmp;   
+                    if (is_mirrored_y) x_offset = -1*x_offset;
+                    if (is_mirrored_x) y_offset = -1*y_offset;
                 }
                 break;
             case CCW:
-                frame_buffer = processRotateCCW(frame_buffer, new_width, new_width, new_kv[i].value);
-                if (new_kv[i].value == 1) {
-                    int tmp = x_offset;
-                    x_offset = y_offset;
-                    y_offset = -1*tmp; 
-                } else if (new_kv[i].value == 2) {
-                    y_offset = -1*y_offset;
-                    x_offset = -1*x_offset;
-                } else {
-                    int tmp = x_offset;
-                    x_offset = -1*y_offset;
-                    y_offset = tmp;
-                }
+                // due to the way the sensors are collapsed, we won't reach this
+                // frame_buffer = processRotateCCW(frame_buffer, new_width, new_width, new_kv[i].value);
+                // current_rotation -= new_kv[i].value;
+                // if (new_kv[i].value == 1) {
+                //     int tmp = x_offset;
+                //     x_offset = y_offset;
+                //     y_offset = -1*tmp; 
+                // } else if (new_kv[i].value == 2) {
+                //     y_offset = -1*y_offset;
+                //     x_offset = -1*x_offset;
+                // } else {
+                //     int tmp = x_offset;
+                //     x_offset = -1*y_offset;
+                //     y_offset = tmp;
+                // }
                 break;
             case MX:
                 frame_buffer = processMirrorX(frame_buffer, new_width, new_width, new_kv[i].value);
@@ -927,58 +931,22 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 x_offset = -1*x_offset;
                 break;
             case VERIFY:
-                new_left = new_left+x_offset;
-                new_top = new_top+y_offset;
+                new_left = left_offset + x_offset;
+                new_top = top_offset + y_offset;
                 printf("new_width %d x_offset %d y_offset %d new_left %d new_top %d\n", new_width, x_offset, y_offset, new_left, new_top);
+                printf("is_mirrored_x %d is_mirrored_y %d current_rotation %d\n", is_mirrored_x, is_mirrored_y, current_rotation);
                 frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, new_left, new_top);
                 //printBMP(width, height, frame_buffer_with_whitespace);
                 verifyFrame(frame_buffer_with_whitespace, width, height, grading_mode);
-                x_offset = 0;
-                y_offset = 0;
-                //frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width);
+                // x_offset = 0;
+                // y_offset = 0;
                 break;    
             default: 
                 break;    
         }
     }
 
-    //frame_buffer = readd_whitespace(new_frame_buffer, width, new_width);
     free(new_kv);
-    //free(frame_buffer_with_whitespace);
-
-//     for (int sensorValueIdx = 0; sensorValueIdx < sensor_values_count; sensorValueIdx++) {
-// //        printf("Processing sensor value #%d: %s, %d\n", sensorValueIdx, sensor_values[sensorValueIdx].key,
-// //               sensor_values[sensorValueIdx].value);
-//         if (!strcmp(sensor_values[sensorValueIdx].key, "W")) {
-//             frame_buffer = processMoveUp(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "A")) {
-//             frame_buffer = processMoveLeft(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "S")) {
-//             frame_buffer = processMoveDown(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "D")) {
-//             frame_buffer = processMoveRight(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "CW")) {
-//             frame_buffer = processRotateCW(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "CCW")) {
-//             frame_buffer = processRotateCCW(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "MX")) {
-//             frame_buffer = processMirrorX(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         } else if (!strcmp(sensor_values[sensorValueIdx].key, "MY")) {
-//             frame_buffer = processMirrorY(frame_buffer, width, height, sensor_values[sensorValueIdx].value);
-// //            printBMP(width, height, frame_buffer);
-//         }
-//         processed_frames += 1;
-//         if (processed_frames % 25 == 0) {
-//             verifyFrame(frame_buffer, width, height, grading_mode);
-//         }
-//     }
 
     return;
 }
