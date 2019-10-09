@@ -401,31 +401,36 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
                 render_col--;
             }
 
-            // if (width%2 == 1) {
-            //         int row = width/2;
-            //         int column = height/2;
+            if (width%2 == 1) {
+                for (int row = 0; row < height/2; row++) {
+                    //int row = 0;
+                    int render_col = width - row - 1;
+                    int render_row = height/2;
+                    int column = width/2; 
 
-            //         int render_pos_a = render_row*width_pixels + render_col*3;
-            //         int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
-            //         int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
-            //         int original_pos = row*width_pixels + column*3;
-            //         if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
-            //             memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
-            //             memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
-            //             memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+                    int render_pos_a = render_row*width_pixels + render_col*3;
+                    int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+                    int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+                    int original_pos = row*width_pixels + column*3;
 
-            //             // save original pixel to temp
-            //             memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-            //             // copy pixel a to original pixel
-            //             memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
-            //             // copy pixel b to pixel a
-            //             memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
-            //             // // copy pixel c to pixel b
-            //             memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
-            //             // // copy temp to pixel c
-            //             memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
-            //         }
-            // }
+                    if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+                        memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+                        memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+                        memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+
+                        // save original pixel to temp
+                        memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+                        // copy pixel a to original pixel
+                        memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
+                        // copy pixel b to pixel a
+                        memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
+                        // // copy pixel c to pixel b
+                        memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
+                        // // copy temp to pixel c
+                        memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
+                    }
+                }
+            }
             break;
         default:
             break;
@@ -921,14 +926,15 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
                 } else if (current_rotation == 2) {
-                    y_offset = -1*y_offset;
-                    x_offset = -1*x_offset;
+                    int tmp = x_offset;
+                    y_offset = -1*y_offset + y_offset;
+                    x_offset = -1*x_offset + tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
                 } else {
-                    int tmp = x_offset;
-                    x_offset = y_offset;
-                    y_offset = -1*tmp;   
+                    int tmp = y_offset;                   
+                    y_offset = -1*tmp + y_offset;   
+                    x_offset = tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
                 }
