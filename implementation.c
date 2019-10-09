@@ -812,6 +812,9 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
     int start_column = x_offset;
     int end_row = new_width + y_offset;
 
+    //if(start_row<0) start_row = 0;
+    //if(start_column<0) start_column = 0;
+
     // place cropped image on white frame
     int inner_image_row = 0;
     for (int row = start_row; row < end_row; row++) {
@@ -848,8 +851,8 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
     frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width, &left_offset, &top_offset);
     //printBMP(new_width, new_width, frame_buffer);
     printf("new width %d left_offset %d top_offset %d\n", new_width, left_offset, top_offset);
-    int x_offset = left_offset;
-    int y_offset = top_offset;
+    int x_offset = 0;
+    int y_offset = 0;
 
     unsigned char *frame_buffer_with_whitespace;
 
@@ -912,8 +915,8 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 x_offset = -1*x_offset;
                 break;
             case VERIFY:
-                printf("new_width %d x_offset %d y_offset %d\n", new_width, x_offset, y_offset);
-                frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, x_offset, y_offset);
+                printf("new_width %d x_offset %d y_offset %d new_left %d new_top %d\n", new_width, x_offset, y_offset, left_offset+x_offset, top_offset+y_offset);
+                frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, left_offset+x_offset, top_offset+y_offset);
                 //printBMP(width, height, frame_buffer_with_whitespace);
                 verifyFrame(frame_buffer_with_whitespace, width, height, grading_mode);
                 x_offset = 0;
