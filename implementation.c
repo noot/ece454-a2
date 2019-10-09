@@ -873,7 +873,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 break;
             case CW:
                 //printBMP(width, height, frame_buffer);
-                frame_buffer = processRotateCW(frame_buffer, width, height, new_kv[i].value);
+                frame_buffer = processRotateCW(frame_buffer, new_width, new_width, new_kv[i].value);
                 //printBMP(width, height, frame_buffer);
                 if (new_kv[i].value == 1) {
                     int tmp = x_offset;
@@ -889,7 +889,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 }
                 break;
             case CCW:
-                frame_buffer = processRotateCCW(frame_buffer, width, height, new_kv[i].value);
+                frame_buffer = processRotateCCW(frame_buffer, new_width, new_width, new_kv[i].value);
                 if (new_kv[i].value == 1) {
                     int tmp = x_offset;
                     x_offset = y_offset;
@@ -904,11 +904,11 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 }
                 break;
             case MX:
-                frame_buffer = processMirrorX(frame_buffer, width, height, new_kv[i].value);
+                frame_buffer = processMirrorX(frame_buffer, new_width, new_width, new_kv[i].value);
                 y_offset = -1*y_offset;
                 break;
             case MY:
-                frame_buffer = processMirrorY(frame_buffer, width, height, new_kv[i].value);
+                frame_buffer = processMirrorY(frame_buffer, new_width, new_width, new_kv[i].value);
                 x_offset = -1*x_offset;
                 break;
             case VERIFY:
@@ -927,7 +927,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
 
     //frame_buffer = readd_whitespace(new_frame_buffer, width, new_width);
     free(new_kv);
-    free(frame_buffer_with_whitespace);
+    //free(frame_buffer_with_whitespace);
 
 //     for (int sensorValueIdx = 0; sensorValueIdx < sensor_values_count; sensorValueIdx++) {
 // //        printf("Processing sensor value #%d: %s, %d\n", sensorValueIdx, sensor_values[sensorValueIdx].key,
