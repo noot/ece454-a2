@@ -173,10 +173,10 @@ unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned int widt
             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
             int original_pos = row*width_pixels + column*3;
 
-            if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+            // if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+            //     memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
 
                 // save original pixel to temp
                 memcpy(tmp_pixel, buffer_frame + original_pos, 3);
@@ -188,7 +188,7 @@ unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned int widt
                 memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
                 // // copy temp to pixel c
                 memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
-            }
+            //}
             render_row++;
         }
         render_row = 0;
@@ -286,47 +286,6 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
 
     switch(rotate_iteration) {
         case 1:
-            // for (int subsquare_index = 0; subsquare_index < num_divisions*num_divisions; subsquare_index++) {
-            //     unsigned char *rotated_subsquare = subsquares[subsquare_index];
-            //     // /if (isSubsquareWhite(rotated_subsquare, subsquare_width)) break;
-            //     //rotated_subsquare = rotateSubsquareCW(rotated_subsquare, subsquare_width);
-
-            //     int subsquare_row_position = subsquare_index/num_divisions; // 0
-            //     int subsquare_col_position = subsquare_index%num_divisions; // 1
-            //     int start_row = subsquare_row_position*subsquare_width; //0
-            //     int start_column = subsquare_col_position*subsquare_width; // 5
-            //     // for (int row = 0; row < subsquare_width; row++) {
-            //     //     memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
-            //     // }
-
-            //     //break;
-            //     if (subsquare_row_position < num_divisions/2 && subsquare_col_position < num_divisions/2) {
-            //         // subsquare in upper left half
-            //         // need to move subsquare to position in upper right half of buffer_frame
-            //         start_column = (num_divisions - subsquare_col_position - 1)*subsquare_width; // 1 * 5  5;
-            //         start_row = subsquare_row_position*subsquare_width; // 0
-            //     } else if (subsquare_row_position < num_divisions/2 && subsquare_col_position >= num_divisions/2) {
-            //         // subsquare in upper right half
-            //         // need to move subsquare to bottom right half
-            //         start_column = subsquare_col_position*subsquare_width; // 1 *5 = 5;
-            //         start_row = (num_divisions - subsquare_row_position - 1)*subsquare_width; // 1*5=5;
-            //    } else if (subsquare_row_position >= num_divisions/2 && subsquare_col_position < num_divisions/2) {
-            //         // subsquare in bottom left half
-            //         // need to move subsquare to top left half
-            //         start_column = subsquare_col_position*subsquare_width;// 5
-            //         start_row = (num_divisions - subsquare_row_position - 1)*subsquare_width; // 0
-            //    } else if (subsquare_row_position >= num_divisions/2 && subsquare_col_position >= num_divisions/2) {
-            //         // subsquare in bottom right half
-            //         // need to move subsquare to bottom left half
-            //         start_column = (num_divisions - subsquare_col_position - 1)*subsquare_width;//0
-            //         start_row = subsquare_row_position*subsquare_width; //5
-            //    }
-
-            //     for (int row = 0; row < subsquare_width; row++) {
-            //         memcpy(buffer_frame + (start_row+row)*width_pixels + start_column*3, rotated_subsquare + row*subsquare_width*3, subsquare_width*3);
-            //     }
-            // }
-
             // buffer_frame = rotateSubsquareCW(buffer_frame, width);
             // break;
 
@@ -362,8 +321,8 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
             }
             break;
         case 2:
-            buffer_frame = rotateSubsquare180(buffer_frame, width);
-            break;
+            // buffer_frame = rotateSubsquare180(buffer_frame, width);
+            // break;
 
             for (int row = 0; row < width>>1; row++) {
                 if (memcmp(buffer_frame + row*width_pixels, white_row, width_pixels) != 0 ||
@@ -416,7 +375,7 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
     }
 
     free(tmp_pixel);
-    //free(white_row);
+    free(white_row);
     //free(subsquares);
 
     // return a pointer to the updated image buffer
@@ -587,9 +546,6 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
 
         switch(current_move) {
             case A: // left 
-                // if (is_mirrored_x) x_offset += current_value;
-                // else x_offset -= current_value;
-                // break;
                 if (is_mirrored_y) current_value *= -1;
                 if (clockwise_rotation == 0) x_offset -= current_value;
                 else if (clockwise_rotation == 1) y_offset -= current_value;
@@ -781,13 +737,14 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     }
 
     int new_row = 0;
-    while(height-begin_image_top < updated_width) {
-        begin_image_top--;
-    }
 
-    while(width-begin_image_left < updated_width) {
-        begin_image_left--;
-    }
+    // while(height-begin_image_top < updated_width) {
+    //     begin_image_top--;
+    // }
+
+    // while(width-begin_image_left < updated_width) {
+    //     begin_image_left--;
+    // }
 
     for (int row = begin_image_top; row < begin_image_top+updated_width; row++) {
         //printf("moving row %d\n", row);
@@ -880,13 +837,19 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 else y_offset += new_kv[i].value;
                 break;
             case CW:
+                current_rotation += new_kv[i].value;
+                new_left = left_offset + x_offset;
+                new_top = top_offset + y_offset;
+                frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, new_left, new_top);
+                frame_buffer_with_whitespace = processRotateCW(frame_buffer_with_whitespace, width, height, new_kv[i].value);
+                break;
                 //printBMP(width, height, frame_buffer);
                 frame_buffer = processRotateCW(frame_buffer, new_width, new_width, new_kv[i].value);
                 current_rotation += new_kv[i].value;
                 //printBMP(width, height, frame_buffer);
                 if (current_rotation == 1) {
                     int tmp = x_offset;
-                    x_offset = -1*y_offset;
+                    x_offset = y_offset;
                     y_offset = tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
@@ -931,11 +894,15 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 x_offset = -1*x_offset;
                 break;
             case VERIFY:
-                new_left = left_offset + x_offset;
-                new_top = top_offset + y_offset;
+                if(current_rotation == 0) {
+                    new_left = left_offset + x_offset;
+                    new_top = top_offset + y_offset;
+                    frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, new_left, new_top);
+
+                }
+
                 printf("new_width %d x_offset %d y_offset %d new_left %d new_top %d\n", new_width, x_offset, y_offset, new_left, new_top);
                 printf("is_mirrored_x %d is_mirrored_y %d current_rotation %d\n", is_mirrored_x, is_mirrored_y, current_rotation);
-                frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, new_left, new_top);
                 //printBMP(width, height, frame_buffer_with_whitespace);
                 verifyFrame(frame_buffer_with_whitespace, width, height, grading_mode);
                 // x_offset = 0;
