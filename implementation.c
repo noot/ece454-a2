@@ -114,150 +114,150 @@ unsigned char *processMoveLeft(unsigned char *buffer_frame, unsigned width, unsi
     return buffer_frame;
 }
 
-unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned int width) {
-    unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
-    int render_col = width-1;
-    int render_row = 0;
-    int width_pixels = width*3;
-    int height = width;
+// unsigned char *rotateSubsquareCW(unsigned char *buffer_frame, unsigned int width) {
+//     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
+//     int render_col = width-1;
+//     int render_row = 0;
+//     int width_pixels = width*3;
+//     int height = width;
 
-    unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
-    memset(white_pixel, 255, 3);
+//     unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
+//     memset(white_pixel, 255, 3);
 
-    for (int row = 0; row < width>>1; row++) {
-        for (int column = 0; column < height>>1; column++) {
-            int render_pos_a = render_row*width_pixels + render_col*3;
-            int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
-            int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
-            int original_pos = row*width_pixels + column*3;
+//     for (int row = 0; row < width>>1; row++) {
+//         for (int column = 0; column < height>>1; column++) {
+//             int render_pos_a = render_row*width_pixels + render_col*3;
+//             int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+//             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+//             int original_pos = row*width_pixels + column*3;
 
-            if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
-                memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
-                // save original pixel to temp
-                memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-                // copy pixel c to original pixel
-                memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
-                // copy pixel b to pixel c
-                memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
-                // // copy pixel a to pixel b
-                memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
-                // // copy temp to pixel a
-                memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
-            }
-            render_row++;
-        }
-        render_row = 0;
-        render_col--;
-    }  
+//             if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+//                 memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+//                 memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+//                 memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+//                 // save original pixel to temp
+//                 memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+//                 // copy pixel c to original pixel
+//                 memcpy(buffer_frame + original_pos, buffer_frame + render_pos_c, 3);
+//                 // copy pixel b to pixel c
+//                 memcpy(buffer_frame + render_pos_c, buffer_frame + render_pos_b, 3);
+//                 // // copy pixel a to pixel b
+//                 memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_a, 3);
+//                 // // copy temp to pixel a
+//                 memcpy(buffer_frame + render_pos_a, tmp_pixel, 3);
+//             }
+//             render_row++;
+//         }
+//         render_row = 0;
+//         render_col--;
+//     }  
 
-    free(tmp_pixel);
-    free(white_pixel);
-    return buffer_frame;
-}
+//     free(tmp_pixel);
+//     free(white_pixel);
+//     return buffer_frame;
+// }
 
-unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned int width) {
-    unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
-    int render_col = width-1;
-    int render_row = 0;
-    int width_pixels = width*3;
-    int height = width;
-    unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
-    memset(white_pixel, 255, 3);
+// unsigned char *rotateSubsquareCCW(unsigned char *buffer_frame, unsigned int width) {
+//     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
+//     int render_col = width-1;
+//     int render_row = 0;
+//     int width_pixels = width*3;
+//     int height = width;
+//     unsigned char *white_pixel = (unsigned char *)malloc(3*sizeof(unsigned char));
+//     memset(white_pixel, 255, 3);
 
-    for (int row = 0; row < width>>1; row++) {
-        for (int column = 0; column < height>>1; column++) {
-            int render_pos_a = render_row*width_pixels + render_col*3;
-            int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
-            int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
-            int original_pos = row*width_pixels + column*3;
+//     for (int row = 0; row < width>>1; row++) {
+//         for (int column = 0; column < height>>1; column++) {
+//             int render_pos_a = render_row*width_pixels + render_col*3;
+//             int render_pos_b = (height-row-1)*width_pixels + (width-column-1)*3;
+//             int render_pos_c = (height-render_row-1)*width_pixels + (width-render_col-1)*3;
+//             int original_pos = row*width_pixels + column*3;
 
-            // if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
-            //     memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
-            //     memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
-            //     memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
+//             // if (memcmp(buffer_frame+original_pos, white_pixel, 3) != 0 ||
+//             //     memcmp(buffer_frame+render_pos_c, white_pixel, 3) != 0 ||
+//             //     memcmp(buffer_frame+render_pos_b, white_pixel, 3) != 0 ||
+//             //     memcmp(buffer_frame+render_pos_a, white_pixel, 3) != 0) {
 
-                // save original pixel to temp
-                memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-                // copy pixel a to original pixel
-                memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
-                // copy pixel b to pixel a
-                memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
-                // // copy pixel c to pixel b
-                memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
-                // // copy temp to pixel c
-                memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
-            //}
-            render_row++;
-        }
-        render_row = 0;
-        render_col--;
-    }
+//                 // save original pixel to temp
+//                 memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+//                 // copy pixel a to original pixel
+//                 memcpy(buffer_frame + original_pos, buffer_frame + render_pos_a, 3);
+//                 // copy pixel b to pixel a
+//                 memcpy(buffer_frame + render_pos_a, buffer_frame + render_pos_b, 3);
+//                 // // copy pixel c to pixel b
+//                 memcpy(buffer_frame + render_pos_b, buffer_frame + render_pos_c, 3);
+//                 // // copy temp to pixel c
+//                 memcpy(buffer_frame + render_pos_c, tmp_pixel, 3);
+//             //}
+//             render_row++;
+//         }
+//         render_row = 0;
+//         render_col--;
+//     }
 
-    free(tmp_pixel);
-    free(white_pixel);
-    return buffer_frame;
-}
+//     free(tmp_pixel);
+//     free(white_pixel);
+//     return buffer_frame;
+// }
 
-unsigned char *rotateSubsquare180(unsigned char *buffer_frame, unsigned int width) {
-    unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
-    int width_pixels = width*3;
-    int height = width;
+// unsigned char *rotateSubsquare180(unsigned char *buffer_frame, unsigned int width) {
+//     unsigned char *tmp_pixel = (unsigned char*)malloc(3*sizeof(unsigned char));
+//     int width_pixels = width*3;
+//     int height = width;
 
-    for (int row = 0; row < width>>1; row++) {
-        for (int column = 0; column < height; column++) {
-            int render_pos = (height-row-1)*width_pixels + (width-column-1)*3;
-            int original_pos = row*width_pixels + column*3;
-            memcpy(tmp_pixel, buffer_frame + original_pos, 3);
-            memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
-            memcpy(buffer_frame + render_pos, tmp_pixel, 3);
-        }
-    }
+//     for (int row = 0; row < width>>1; row++) {
+//         for (int column = 0; column < height; column++) {
+//             int render_pos = (height-row-1)*width_pixels + (width-column-1)*3;
+//             int original_pos = row*width_pixels + column*3;
+//             memcpy(tmp_pixel, buffer_frame + original_pos, 3);
+//             memcpy(buffer_frame + original_pos, buffer_frame + render_pos, 3);
+//             memcpy(buffer_frame + render_pos, tmp_pixel, 3);
+//         }
+//     }
 
-    free(tmp_pixel);
-    return buffer_frame;
-}
+//     free(tmp_pixel);
+//     return buffer_frame;
+// }
 
-bool isSubsquareWhite(unsigned char *buffer_frame, unsigned width) {
-    unsigned char* whitesubsquare = (unsigned char*)malloc(width*width*3*sizeof(unsigned char));
-    memset(whitesubsquare, 255, width*width*3);
-    if (memcmp(whitesubsquare, buffer_frame, width*width*3) != 0) return false;
-    return true;
-}
+// bool isSubsquareWhite(unsigned char *buffer_frame, unsigned width) {
+//     unsigned char* whitesubsquare = (unsigned char*)malloc(width*width*3*sizeof(unsigned char));
+//     memset(whitesubsquare, 255, width*width*3);
+//     if (memcmp(whitesubsquare, buffer_frame, width*width*3) != 0) return false;
+//     return true;
+// }
 
-// num_divisions is how many times the rows/columns get divided
-// total # of subsquares = num_divisions*num_divisions
-// subsquares array is arranged in row-order
-// eg. buffer_frame: 
-//  ___ ___ ___
-// |_0_|_1_|_2_|
-// |_4_|_5_|_6_|
-// |_7_|_8_|_9_|
-// 
-// num_divisions = 3; subsquares: | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 
-unsigned char **divideIntoSubsquares(unsigned char *buffer_frame, unsigned width, unsigned num_divisions) {
-    unsigned char **subsquares = (unsigned char**)malloc(num_divisions*num_divisions*sizeof(unsigned char*));
-    int subsquare_width = width/num_divisions;
-    // int excess = width%num_divisions;
-    // int middle_index = num_divisions/2;
+// // num_divisions is how many times the rows/columns get divided
+// // total # of subsquares = num_divisions*num_divisions
+// // subsquares array is arranged in row-order
+// // eg. buffer_frame: 
+// //  ___ ___ ___
+// // |_0_|_1_|_2_|
+// // |_4_|_5_|_6_|
+// // |_7_|_8_|_9_|
+// // 
+// // num_divisions = 3; subsquares: | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 
+// unsigned char **divideIntoSubsquares(unsigned char *buffer_frame, unsigned width, unsigned num_divisions) {
+//     unsigned char **subsquares = (unsigned char**)malloc(num_divisions*num_divisions*sizeof(unsigned char*));
+//     int subsquare_width = width/num_divisions;
+//     // int excess = width%num_divisions;
+//     // int middle_index = num_divisions/2;
 
-    // let's add excess pixels to the middle subsquare to make things easier for rotation
+//     // let's add excess pixels to the middle subsquare to make things easier for rotation
 
-    for (int i = 0; i < num_divisions*num_divisions; i++) {
-        subsquares[i] = (unsigned char*)malloc(subsquare_width*subsquare_width*3*sizeof(unsigned char));
-        unsigned char *ss = subsquares[i];
-        int column = (i%num_divisions) * subsquare_width;
-        // copy row by row into subsquare
-        for (int row = 0; row < subsquare_width; row++) {
-            int row_within_buffer_frame = i*subsquare_width/num_divisions;
-            memcpy(ss + row*subsquare_width*3, buffer_frame + (row_within_buffer_frame+row)*width*3 + column*3, subsquare_width*3);
-        }
-        subsquares[i] = ss;
-    }
+//     for (int i = 0; i < num_divisions*num_divisions; i++) {
+//         subsquares[i] = (unsigned char*)malloc(subsquare_width*subsquare_width*3*sizeof(unsigned char));
+//         unsigned char *ss = subsquares[i];
+//         int column = (i%num_divisions) * subsquare_width;
+//         // copy row by row into subsquare
+//         for (int row = 0; row < subsquare_width; row++) {
+//             int row_within_buffer_frame = i*subsquare_width/num_divisions;
+//             memcpy(ss + row*subsquare_width*3, buffer_frame + (row_within_buffer_frame+row)*width*3 + column*3, subsquare_width*3);
+//         }
+//         subsquares[i] = ss;
+//     }
 
-    return subsquares;
-}
+//     return subsquares;
+// }
 
 /***********************************************************************************************************************
  * @param buffer_frame - pointer pointing to a buffer storing the imported 24-bit bitmap image
@@ -438,6 +438,7 @@ unsigned char *processRotateCW(unsigned char *buffer_frame, unsigned width, unsi
 
     free(tmp_pixel);
     free(white_row);
+    free(white_pixel);
     //free(subsquares);
 
     // return a pointer to the updated image buffer
@@ -506,6 +507,8 @@ unsigned char *processMirrorX(unsigned char *buffer_frame, unsigned int width, u
 
     free(temp_row);
 
+    free(white_row);
+
     // return a pointer to the updated image buffer
     return buffer_frame;
 }
@@ -542,6 +545,7 @@ unsigned char *processMirrorY(unsigned char *buffer_frame, unsigned width, unsig
     }
 
     free(temp_row);
+    free(white_row);
 
     // return a pointer to the updated image buffer
     return buffer_frame;
@@ -757,7 +761,7 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     // rotate CW 90 degrees, check whitespace at top and bottom
     frame_buffer = processRotateCW(frame_buffer, width, height, 1);
 
-    printBMP(width, height, frame_buffer);
+    //printBMP(width, height, frame_buffer);
 
     // check for whitespace at top (actually left)
     for (int row = 0; row < height; row++) {
@@ -778,7 +782,7 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     // rotate back CCW
     frame_buffer = processRotateCCW(frame_buffer, width, height, 1);
 
-    printBMP(width, height, frame_buffer);
+    //printBMP(width, height, frame_buffer);
 
     // figure out how much we can remove to crop the image into a square around the object
     int left_right_size = begin_image_right - begin_image_left;
@@ -796,7 +800,7 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     printf("left to right %d top to bottom %d\n", left_right_size, top_bottom_size);
     // remove excess whitespace
     //unsigned int updated_width = width - (current_removeable_pixels*2); // = new_height
-    unsigned char *new_frame_buffer = (unsigned char*)malloc(updated_width*updated_width*3*sizeof(char));
+    unsigned char *new_frame_buffer = (unsigned char*)malloc(updated_width*updated_width*3*sizeof(unsigned char));
     if (new_frame_buffer == NULL) {
         printf("error allocating for new frame buffer\n");
         return NULL;
@@ -824,13 +828,16 @@ unsigned char *remove_whitespace(unsigned char *frame_buffer, unsigned int width
     *left_offset = begin_image_left;
     *top_offset = begin_image_top;
 
+    //printf("frame_buffer after whitespace removal %p\n", frame_buffer);
+    free(white_row);
+
     return new_frame_buffer;
 }
 
 // readd whitespace to sides with x_offset and y_offset
-unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned int original_width, unsigned int new_width, int x_offset, int y_offset) {
-    unsigned char *frame_buffer = (unsigned char*)malloc(original_width*original_width*3*sizeof(unsigned char));
-    memset(frame_buffer, 255, original_width*original_width*3);
+void readd_whitespace(unsigned char *optimized_frame_buffer, unsigned char *frame_buffer_with_whitespace, unsigned int original_width, unsigned int new_width, int x_offset, int y_offset) {
+    //unsigned char *frame_buffer_with_whitespace = (unsigned char*)malloc(original_width*original_width*3*sizeof(unsigned char));
+    memset(frame_buffer_with_whitespace, 255, original_width*original_width*3);
 
     // calculate where to place cropped image on original image
     int start_row = y_offset;
@@ -840,14 +847,17 @@ unsigned char *readd_whitespace(unsigned char *optimized_frame_buffer, unsigned 
     if (start_row < 0) printf("start_row < 0");
     if (start_column < 0) printf("start_column < 0");
 
+    if(end_row > original_width) end_row = original_width;
+
     // place cropped image on white frame
     int inner_image_row = 0;
     for (int row = start_row; row < end_row; row++) {
-        memcpy(frame_buffer + row*original_width*3 + start_column*3, optimized_frame_buffer + inner_image_row*new_width*3 , new_width*3);
+        memcpy(frame_buffer_with_whitespace + row*original_width*3 + start_column*3, optimized_frame_buffer + inner_image_row*new_width*3 , new_width*3);
         inner_image_row++;
+        //if(inner_image_row >= new_width) return;
     }
 
-    return frame_buffer;
+    return;// frame_buffer_with_whitespace;
 }
 
 /***********************************************************************************************************************
@@ -868,19 +878,19 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
     int new_count, left_offset, top_offset;
     okv *new_kv = optimize_sensor_values(sensor_values, sensor_values_count, &new_count);
 
-    printBMP(width, width, frame_buffer);
+    //printBMP(width, width, frame_buffer);
+    int new_width = width;
+    unsigned char *new_frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width, &left_offset, &top_offset);
 
-    int new_width;
-    frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width, &left_offset, &top_offset);
     //printBMP(new_width, new_width, frame_buffer);
-    printf("new width %d left_offset %d top_offset %d\n", new_width, left_offset, top_offset);
+    //printf("new width %d left_offset %d top_offset %d\n", new_width, left_offset, top_offset);
     int x_offset = 0;
     int y_offset = 0;
     bool is_mirrored_x = false;
     bool is_mirrored_y = false;
     int current_rotation = 0;
 
-    unsigned char *frame_buffer_with_whitespace;
+    unsigned char *frame_buffer_with_whitespace = (unsigned char *)malloc(width*3*height*sizeof(unsigned char));
 
     int new_left = left_offset;
     int new_top = top_offset;
@@ -916,27 +926,32 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 // break;
 
                 //printBMP(width, height, frame_buffer);
-                frame_buffer = processRotateCW(frame_buffer, new_width, new_width, new_kv[i].value);
+                new_frame_buffer = processRotateCW(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 current_rotation += new_kv[i].value;
+                current_rotation = current_rotation%4;
+                int rotation_diff = (current_rotation - new_kv[i].value)%4;
                 //printBMP(width, height, frame_buffer);
-                if (current_rotation == 1) {
+                if (rotation_diff == 1) {
                     int tmp = x_offset;
                     x_offset = -1*y_offset + x_offset;
                     y_offset = tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
-                } else if (current_rotation == 2) {
-                    int tmp = x_offset;
-                    y_offset = -1*y_offset + y_offset;
-                    x_offset = -1*x_offset + tmp;
+                } else if (rotation_diff == 2) {
+                    int x_tmp = x_offset;
+                    int y_tmp = y_offset;
+                    y_offset = -1*y_offset + y_tmp;
+                    x_offset = -1*x_offset + x_tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
-                } else {
+                } else if (rotation_diff = 3) {
                     int tmp = y_offset;                   
                     y_offset = -1*tmp + y_offset;   
                     x_offset = tmp;
                     if (is_mirrored_y) x_offset = -1*x_offset;
                     if (is_mirrored_x) y_offset = -1*y_offset;
+                } else {
+
                 }
                 break;
             case CCW:
@@ -957,36 +972,41 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 // }
                 break;
             case MX:
-                frame_buffer = processMirrorX(frame_buffer, new_width, new_width, new_kv[i].value);
+                new_frame_buffer = processMirrorX(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 is_mirrored_x = !is_mirrored_x;
                 y_offset = -1*y_offset;
                 break;
             case MY:
-                frame_buffer = processMirrorY(frame_buffer, new_width, new_width, new_kv[i].value);
+                new_frame_buffer = processMirrorY(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 is_mirrored_y = !is_mirrored_y;
                 x_offset = -1*x_offset;
                 break;
             case VERIFY:
                 //if(current_rotation == 0) {
-                    new_left = left_offset + x_offset;
-                    new_top = top_offset + y_offset;
-                    frame_buffer_with_whitespace = readd_whitespace(frame_buffer, width, new_width, new_left, new_top);
+                new_left = left_offset + x_offset;
+                new_top = top_offset + y_offset;
+                readd_whitespace(new_frame_buffer, frame_buffer_with_whitespace, width, new_width, new_left, new_top);
                 //}
-                printBMP(new_width, new_width, frame_buffer);
+                //printBMP(new_width, new_width, new_frame_buffer);
 
                 printf("new_width %d x_offset %d y_offset %d new_left %d new_top %d\n", new_width, x_offset, y_offset, new_left, new_top);
                 printf("is_mirrored_x %d is_mirrored_y %d current_rotation %d\n", is_mirrored_x, is_mirrored_y, current_rotation);
-                printBMP(width, height, frame_buffer_with_whitespace);
+                //printBMP(width, height, frame_buffer_with_whitespace);
                 verifyFrame(frame_buffer_with_whitespace, width, height, grading_mode);
                 // x_offset = 0;
                 // y_offset = 0;
+                // current_rotation = 0;
                 break;    
             default: 
                 break;    
         }
     }
 
-    free(new_kv);
+    //printBMP(width, width, frame_buffer_copy);
+    //frame_buffer = frame_buffer_copy;
 
+    free(frame_buffer_with_whitespace);
+    free(new_kv);
+    free(new_frame_buffer);
     return;
 }
