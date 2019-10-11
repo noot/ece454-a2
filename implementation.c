@@ -640,6 +640,9 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
             y_offset *= -1;
         } else if (current_move == MY && current_value%2 == 1) {
             x_offset *= -1;
+        } else if (current_move == CW && current_value == 2 || current_move == CCW && current_value == 2) {
+            y_offset *= -1;
+            x_offset *= -1;
         }
 
         switch(current_move) {
