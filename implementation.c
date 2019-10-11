@@ -640,7 +640,7 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
         if (is_mirrored_x && is_mirrored_y) {
             clockwise_rotation = (clockwise_rotation + 2)%4;
             is_mirrored_y = false;
-            is_mirrored_x = false;
+            is_mirrored_x = false;      
         }
 
         switch(current_move) {
@@ -725,7 +725,7 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 pos++; 
                 printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
             }
-            
+
             // collapse all rotations
             if (clockwise_rotation > 0) {
                 optimized_sensor_values[pos].m = CW;
