@@ -850,16 +850,21 @@ void readd_whitespace(unsigned char *optimized_frame_buffer, unsigned char *fram
     int start_row = y_offset;
     int start_column = x_offset;
     int end_row = new_width + y_offset;
+    int end_column = new_width + x_offset;
 
-    if (start_row < 0) printf("start_row < 0");
-    if (start_column < 0) printf("start_column < 0");
+    if (start_row < 0) {
+        printf("start_row < 0\n"); start_row = -1*start_row;
+    }
+    if (start_column < 0) { 
+        printf("start_column < 0\n"); start_column = -1*start_column; 
+    }
 
     if(end_row > original_width) end_row = original_width;
 
     // place cropped image on white frame
     int inner_image_row = 0;
     for (int row = start_row; row < end_row; row++) {
-        memcpy(frame_buffer_with_whitespace + row*original_width*3 + start_column*3, optimized_frame_buffer + inner_image_row*new_width*3 , new_width*3);
+        memcpy(frame_buffer_with_whitespace + row*original_width*3 + start_column*3, optimized_frame_buffer + inner_image_row*new_width*3 , (end_column - start_column)*3);//new_width*3);
         inner_image_row++;
         //if(inner_image_row >= new_width) return;
     }
@@ -890,7 +895,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
     unsigned char *new_frame_buffer = remove_whitespace(frame_buffer, width, height, &new_width, &left_offset, &top_offset);
 
     //printBMP(new_width, new_width, frame_buffer);
-    //printf("new width %d left_offset %d top_offset %d\n", new_width, left_offset, top_offset);
+    printf("orig_width %d new width %d left_offset %d top_offset %d\n", width, new_width, left_offset, top_offset);
     int x_offset = left_offset;
     int y_offset = top_offset;
     bool is_mirrored_x = false;
@@ -914,6 +919,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 y_offset += new_kv[i].value;
                 break;
             case CW:
+                printf("CW %d\n", new_kv[i].value);
                 //printBMP(width, height, frame_buffer);
                 new_frame_buffer = processRotateCW(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 rotation_diff = new_kv[i].value;
@@ -927,13 +933,17 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                     int x_tmp = x_offset;
                     int y_tmp = y_offset;
                     //printf("x_tmp %d y_tmp %d\n", x_tmp, y_tmp);
-                    y_offset = height  - y_tmp - new_width;
-                    x_offset = width  - x_tmp - new_width;
+                    y_offset = height - y_tmp - new_width;
+                    x_offset = width - x_tmp - new_width;
                 } else if (rotation_diff == 3) {
                     //printf("noot\n");
                     int tmp = x_offset;    
-                    x_offset = y_offset + 1;               
-                    y_offset = width - new_width - tmp - 1;
+                    x_offset = y_offset;               
+                    y_offset = width - new_width - tmp;
+                    //if (x_offset%2 == 0 || y_offset%2 == 1) {
+                        // x_offset++;
+                        // y_offset--;
+                    //}
                 } 
                 break;
             case CCW:
@@ -945,6 +955,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 new_frame_buffer = processMirrorX(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 is_mirrored_x = !is_mirrored_x;
                 y_offset = height - new_width - y_offset;
+                x_offset;
                 printf("y_offset %d\n", y_offset);
                 break;
             case MY:
@@ -954,9 +965,9 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 break;
             case VERIFY:
                 readd_whitespace(new_frame_buffer, frame_buffer_with_whitespace, width, new_width, x_offset, y_offset);
-                //printBMP(new_width, new_width, new_frame_buffer);
+               //printBMP(new_width, new_width, new_frame_buffer);
                 printf("new_width %d x_offset %d y_offset %d\n", new_width, x_offset, y_offset);
-                //printf("is_mirrored_x %d is_mirrored_y %d current_rotation %d\n", is_mirrored_x, is_mirrored_y, current_rotation);
+                printf("is_mirrored_x %d is_mirrored_y %d\n", is_mirrored_x, is_mirrored_y);
                 //printBMP(width, height, frame_buffer_with_whitespace);
                 verifyFrame(frame_buffer_with_whitespace, width, height, grading_mode);
                 break;    
