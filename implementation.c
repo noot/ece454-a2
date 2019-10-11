@@ -613,6 +613,9 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
     int clockwise_rotation = 0;
     int pos = 0;
 
+    bool mx_before_rotate = false;
+    bool my_before_rotate = false;
+
     for (int i = 0; i < sensor_values_count; i++) {
         int current_move = sensor_values[i].key[0] + sensor_values[i].key[1];
         // printf("move %s\n", sensor_values[i].key);
@@ -639,23 +642,29 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 if (clockwise_rotation == 0) y_offset -= current_value;
                 else if (clockwise_rotation == 1) x_offset += current_value;
                 else if (clockwise_rotation == 2) y_offset += current_value;
-                else y_offset -= current_value;
+                else x_offset -= current_value;
                 break;
             case W: // up
                 if (is_mirrored_x) current_value *= -1;
                 if (clockwise_rotation == 0) y_offset += current_value;
                 else if (clockwise_rotation == 1) x_offset -= current_value;
                 else if (clockwise_rotation == 2) y_offset -= current_value;
-                else y_offset += current_value;
-                break;
-            case CW:
-                if (is_mirrored_x) current_value *= -1;
-                if (is_mirrored_y) current_value *= -1;
-                clockwise_rotation += current_value;
-                clockwise_rotation = clockwise_rotation % 4;
+                else x_offset += current_value;
                 break;
             case CCW:
-                clockwise_rotation -= current_value;
+                current_value *= -1;
+                //clockwise_rotation = clockwise_rotation % 4;
+            case CW:
+                if (is_mirrored_x) {
+                    current_value *= -1;
+                    mx_before_rotate = !mx_before_rotate;
+                }
+                if (is_mirrored_y) {
+                    current_value *= -1;
+                    my_before_rotate = !my_before_rotate;
+                }
+                clockwise_rotation += current_value;
+                //clockwise_rotation = clockwise_rotation % 4;
                 break;
             case MX:
                 is_mirrored_x = !is_mirrored_x;
@@ -676,11 +685,16 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 optimized_sensor_values[pos].m = A;
                 optimized_sensor_values[pos].value = -1*x_offset;
                 pos++; 
+
+                            printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+
             } else if (x_offset != 0) {
                 // printf("D %d\n", x_offset);
                 optimized_sensor_values[pos].m = D;
                 optimized_sensor_values[pos].value = x_offset;
-                pos++;               
+                pos++;   
+                    printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+            
             }
 
             if (y_offset < 0) {
@@ -688,11 +702,43 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 optimized_sensor_values[pos].m = S;
                 optimized_sensor_values[pos].value = -1*y_offset;
                 pos++;  
+                    printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+
             } else if (y_offset != 0) {                
                 // printf("W %d\n", y_offset);
                 optimized_sensor_values[pos].m = W;
                 optimized_sensor_values[pos].value = y_offset;
-                pos++;               
+                pos++; 
+            printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+
+            }
+
+            // if (mx_before_rotate && is_mirrored_x) {
+            //     optimized_sensor_values[pos].m = MX;
+            //     optimized_sensor_values[pos].value = 1;
+            //     pos++;
+            //     printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+
+            // }
+            // if (my_before_rotate && is_mirrored_y ) {
+            //         optimized_sensor_values[pos].m = MY;
+            //     optimized_sensor_values[pos].value = 1;
+            //     pos++;
+            //     printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+            
+            // }
+
+            // collapse all rotations
+            if (clockwise_rotation < 0) {
+                optimized_sensor_values[pos].m = CW;
+                optimized_sensor_values[pos].value = (-1*clockwise_rotation)%4;
+                pos++;
+                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+            } else if (clockwise_rotation != 0) {
+                optimized_sensor_values[pos].m = CW;
+                optimized_sensor_values[pos].value = clockwise_rotation%4;
+                pos++;
+                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
             }
 
             // collapse all mirroring
@@ -700,23 +746,16 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 optimized_sensor_values[pos].m = MX;
                 optimized_sensor_values[pos].value = 1;
                 pos++;
+                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+
             }
 
             if (is_mirrored_y) {
                 optimized_sensor_values[pos].m = MY;
                 optimized_sensor_values[pos].value = 1;
                 pos++;
-            }
+                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
 
-            // collapse all rotations
-            if (clockwise_rotation < 0) {
-                optimized_sensor_values[pos].m = CW;
-                optimized_sensor_values[pos].value = -1*clockwise_rotation;
-                pos++;
-            } else if (clockwise_rotation != 0) {
-                optimized_sensor_values[pos].m = CW;
-                optimized_sensor_values[pos].value = clockwise_rotation;
-                pos++;
             }
 
             // reset values
@@ -725,6 +764,8 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
             x_offset = 0;
             y_offset = 0;
             clockwise_rotation = 0;
+            mx_before_rotate = false;
+            my_before_rotate = false;
 
             // printf("VERIFY\n");
 
@@ -732,6 +773,8 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
             optimized_sensor_values[pos].m = VERIFY;
             optimized_sensor_values[pos].value = 0;
             pos++;
+
+            printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
         } 
     }
 
@@ -919,7 +962,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 y_offset += new_kv[i].value;
                 break;
             case CW:
-                printf("CW %d\n", new_kv[i].value);
+                //printf("CW %d\n", new_kv[i].value);
                 //printBMP(width, height, frame_buffer);
                 new_frame_buffer = processRotateCW(new_frame_buffer, new_width, new_width, new_kv[i].value);
                 rotation_diff = new_kv[i].value;
@@ -965,7 +1008,7 @@ void implementation_driver(struct kv *sensor_values, int sensor_values_count, un
                 break;
             case VERIFY:
                 readd_whitespace(new_frame_buffer, frame_buffer_with_whitespace, width, new_width, x_offset, y_offset);
-               //printBMP(new_width, new_width, new_frame_buffer);
+                //printBMP(new_width, new_width, new_frame_buffer);
                 printf("new_width %d x_offset %d y_offset %d\n", new_width, x_offset, y_offset);
                 printf("is_mirrored_x %d is_mirrored_y %d\n", is_mirrored_x, is_mirrored_y);
                 //printBMP(width, height, frame_buffer_with_whitespace);
