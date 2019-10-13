@@ -614,10 +614,17 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
     int pos = 0;
 
     int frame = 0;
+    int next_move = 0;
+    int next_value = 0;
 
     for (int i = 0; i < sensor_values_count; i++) {
         int current_move = sensor_values[i].key[0] + sensor_values[i].key[1];
         int current_value = sensor_values[i].value;
+        if (i < sensor_values_count-1) {
+            next_move = sensor_values[i+1].key[0] + sensor_values[i+1].key[1];
+            next_value = sensor_values[i+1].value;
+        }
+
         // printf("move %d value %d\n", current_move, current_value);
 
         // if (current_move == CW && current_value%4 == 1 || current_move == CCW && current_value%4 == 3) {
@@ -637,75 +644,81 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
         //     x_offset *= -1;
         // }
 
-        if (current_move == CW || current_move == CCW || current_move == MX || current_move == MY) {
-            if (x_offset < 0) {
-                // printf("A %d\n", -1*x_offset);
-                optimized_sensor_values[pos].m = A;
-                optimized_sensor_values[pos].value = -1*x_offset;
-                pos++; 
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            } else if (x_offset != 0) {
-                // printf("D %d\n", x_offset);
-                optimized_sensor_values[pos].m = D;
-                optimized_sensor_values[pos].value = x_offset;
-                pos++;   
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            }
 
-            if (y_offset < 0) {
-                // printf("S %d\n", -1*y_offset);
-                optimized_sensor_values[pos].m = W;
-                optimized_sensor_values[pos].value = -1*y_offset;
-                pos++;  
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            } else if (y_offset != 0) {                
-                // printf("W %d\n", y_offset);
-                optimized_sensor_values[pos].m = S;
-                optimized_sensor_values[pos].value = y_offset;
-                pos++; 
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            }
+        // if (current_move == CW || current_move == CCW || current_move == MX || current_move == MY) {
+        //     if (x_offset < 0) {
+        //         // printf("A %d\n", -1*x_offset);
+        //         optimized_sensor_values[pos].m = A;
+        //         optimized_sensor_values[pos].value = -1*x_offset;
+        //         pos++; 
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     } else if (x_offset != 0) {
+        //         // printf("D %d\n", x_offset);
+        //         optimized_sensor_values[pos].m = D;
+        //         optimized_sensor_values[pos].value = x_offset;
+        //         pos++;   
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
 
-            x_offset = 0;
-            y_offset = 0;
-        }
+        //     if (y_offset < 0) {
+        //         // printf("S %d\n", -1*y_offset);
+        //         optimized_sensor_values[pos].m = W;
+        //         optimized_sensor_values[pos].value = -1*y_offset;
+        //         pos++;  
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     } else if (y_offset != 0) {                
+        //         // printf("W %d\n", y_offset);
+        //         optimized_sensor_values[pos].m = S;
+        //         optimized_sensor_values[pos].value = y_offset;
+        //         pos++; 
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+
+        //     x_offset = 0;
+        //     y_offset = 0;
+        //     has_offset_between_rotation_or_mirror = true;
+        // }
 
         switch(current_move) {
             case A: // left 
-                // if (is_mirrored_y) current_value *= -1;
-                // if (is_mirrored_y && is_mirrored_x) current_value *= -1;
-                // if (clockwise_rotation%4 == 0) x_offset -= current_value;
-                // else if (clockwise_rotation%4 == 1) y_offset -= current_value;
-                // else if (clockwise_rotation%4 == 2) x_offset += current_value;
-                // else y_offset += current_value;
-                x_offset -= current_value;
+                if (current_value == 0) break;
+                if (is_mirrored_y && clockwise_rotation%2 == 0) current_value *= -1;
+                //if (is_mirrored_x && clockwise_rotation%2 == 1) current_value *= -1;
+                if (clockwise_rotation%4 == 0) x_offset -= current_value;
+                else if (clockwise_rotation%4 == 1) y_offset += current_value;
+                else if (clockwise_rotation%4 == 2) x_offset += current_value;
+                else y_offset -= current_value;
+                //x_offset -= current_value;
                 break;
             case D: // right
-                // if (is_mirrored_y) current_value *= -1;
-                // if (is_mirrored_y && is_mirrored_x) current_value *= -1;
-                // if (clockwise_rotation%4 == 0) x_offset += current_value;
-                // else if (clockwise_rotation%4 == 1) y_offset += current_value;
-                // else if (clockwise_rotation%4 == 2) x_offset -= current_value;
-                // else y_offset -= current_value;
-                x_offset += current_value;
+                if (current_value == 0) break;
+                if (is_mirrored_y && clockwise_rotation%2 == 0) current_value *= -1;
+                //if (is_mirrored_x && clockwise_rotation%2 == 1) current_value *= -1;
+                if (clockwise_rotation%4 == 0) x_offset += current_value;
+                else if (clockwise_rotation%4 == 1) y_offset -= current_value;
+                else if (clockwise_rotation%4 == 2) x_offset -= current_value;
+                else y_offset += current_value;
+                //x_offset += current_value;
                 break;
             case S: // down
-                // if (is_mirrored_x) current_value *= -1;
-                // if (is_mirrored_y && is_mirrored_x) current_value *= -1;
-                // if (clockwise_rotation%4 == 0) y_offset += current_value;
-                // else if (clockwise_rotation%4 == 1) x_offset -= current_value;
-                // else if (clockwise_rotation%4 == 2) y_offset -= current_value;
-                // else x_offset += current_value;
-                y_offset += current_value;
+                if (current_value == 0) break;
+                if (is_mirrored_x && clockwise_rotation%2 == 0) current_value *= -1;
+                //if (is_mirrored_y && clockwise_rotation%2 == 0) current_value *= -1;
+                if (clockwise_rotation%4 == 0) y_offset += current_value;
+                else if (clockwise_rotation%4 == 1) x_offset -= current_value;
+                else if (clockwise_rotation%4 == 2) y_offset -= current_value;
+                else x_offset += current_value;
+                //y_offset += current_value;
                 break;
             case W: // up
-                // if (is_mirrored_x) current_value *= -1;
-                // if (is_mirrored_y && is_mirrored_x) current_value *= -1;
-                // if (clockwise_rotation%4 == 0) y_offset -= current_value;
-                // else if (clockwise_rotation%4 == 1) x_offset += current_value;
-                // else if (clockwise_rotation%4 == 2) y_offset += current_value;
-                // else x_offset -= current_value;
-                y_offset -= current_value;
+                if (current_value == 0) break;
+                if (is_mirrored_x && clockwise_rotation%2 == 0) current_value *= -1;
+                //if (is_mirrored_y && clockwise_rotation%2 == 0) current_value *= -1;
+                if (clockwise_rotation%4 == 0) y_offset -= current_value;
+                else if (clockwise_rotation%4 == 1) x_offset += current_value;
+                else if (clockwise_rotation%4 == 2) y_offset += current_value;
+                else x_offset -= current_value;
+                //y_offset -= current_value;
                 break;
             case CCW:
                 current_value *= -1;
@@ -722,9 +735,11 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 break;
             case MX:
                 is_mirrored_x = !is_mirrored_x;
+                //clockwise_rotation = (clockwise_rotation+2)%4;
                 break;
             case MY:
                 is_mirrored_y = !is_mirrored_y;
+                //clockwise_rotation = (clockwise_rotation+2)%4;
                 break;
             default:
                 break;
@@ -751,38 +766,84 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
             is_mirrored_x = false;      
         }
 
-        if (current_move == CW || current_move == CCW || current_move == MX || current_move == MY) {
-            // collapse all rotations
-            if (clockwise_rotation > 0) {
-                optimized_sensor_values[pos].m = CW;
-                optimized_sensor_values[pos].value = clockwise_rotation;
-                pos++;
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            }
-            
-            if (is_mirrored_x) {
-                optimized_sensor_values[pos].m = MX;
-                optimized_sensor_values[pos].value = 1;
-                pos++;
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            }
-            if (is_mirrored_y) {
-                optimized_sensor_values[pos].m = MY;
-                optimized_sensor_values[pos].value = 1;
-                pos++;
-                printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-            }
+        // if ((clockwise_rotation != 0 || is_mirrored_x != 0 || is_mirrored_y != 0) && (next_move<=87 /*&& next_value != 0*/ && i<sensor_values_count-1)) {
+        //     // next move is a translation, collapse all translations+mirrors+rotations that came before it 
 
-            // reset values
-            is_mirrored_x = false;
-            is_mirrored_y = false;
-            // x_offset = 0;
-            // y_offset = 0;
-            clockwise_rotation = 0;
-        }
+        //     // if (is_mirrored_x) y_offset *= -1;
+        //     // if (is_mirrored_y) x_offset *= -1;
+
+        //     // if (clockwise_rotation%4 == 1) {
+        //     //     int tmp = y_offset;                   
+        //     //     y_offset = -1*x_offset;
+        //     //     x_offset = tmp;
+        //     // } else if (clockwise_rotation%4 == 3) {
+        //     //     int tmp = y_offset;                   
+        //     //     y_offset = x_offset;
+        //     //     x_offset = -1*tmp;
+        //     // } else if (clockwise_rotation%4 == 2) {
+        //     //     y_offset *= -1;
+        //     //     x_offset *= -1;
+        //     // }
+
+        //     if (x_offset < 0) {
+        //         // printf("A %d\n", -1*x_offset);
+        //         optimized_sensor_values[pos].m = A;
+        //         optimized_sensor_values[pos].value = -1*x_offset;
+        //         pos++; 
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     } else if (x_offset != 0) {
+        //         // printf("D %d\n", x_offset);
+        //         optimized_sensor_values[pos].m = D;
+        //         optimized_sensor_values[pos].value = x_offset;
+        //         pos++;   
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+
+        //     if (y_offset < 0) {
+        //         // printf("S %d\n", -1*y_offset);
+        //         optimized_sensor_values[pos].m = W;
+        //         optimized_sensor_values[pos].value = -1*y_offset;
+        //         pos++;  
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     } else if (y_offset != 0) {                
+        //         // printf("W %d\n", y_offset);
+        //         optimized_sensor_values[pos].m = S;
+        //         optimized_sensor_values[pos].value = y_offset;
+        //         pos++; 
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+
+        //     // collapse all rotations
+        //     if (clockwise_rotation > 0) {
+        //         optimized_sensor_values[pos].m = CW;
+        //         optimized_sensor_values[pos].value = clockwise_rotation;
+        //         pos++;
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+
+        //     if (is_mirrored_x) {
+        //         optimized_sensor_values[pos].m = MX;
+        //         optimized_sensor_values[pos].value = 1;
+        //         pos++;
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+        //     if (is_mirrored_y) {
+        //         optimized_sensor_values[pos].m = MY;
+        //         optimized_sensor_values[pos].value = 1;
+        //         pos++;
+        //         printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
+        //     }
+
+        //     // reset values
+        //     is_mirrored_x = false;
+        //     is_mirrored_y = false;
+        //     x_offset = 0;
+        //     y_offset = 0;
+        //     clockwise_rotation = 0;
+        // }
 
         if ((i+1)%25 == 0) {
-            printf("FRAME #%d\n", frame);
+            printf("FRAME #%d sensor %d\n", i/25, i-24);
             frame++;
 
             if (x_offset < 0) {
@@ -846,9 +907,6 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
             optimized_sensor_values[pos].m = VERIFY;
             optimized_sensor_values[pos].value = 0;
             pos++;
-
-            //printf("move %d value %d\n", optimized_sensor_values[pos-1].m, optimized_sensor_values[pos-1].value);
-
         } 
     }
 
