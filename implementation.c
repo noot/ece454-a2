@@ -721,6 +721,7 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 //y_offset -= current_value;
                 break;
             case CCW:
+                if (current_value == 0) break;
                 current_value *= -1;
                 if (is_mirrored_x || is_mirrored_y) {
                     current_value *= -1;
@@ -728,16 +729,19 @@ okv *optimize_sensor_values(struct kv *sensor_values, int sensor_values_count, i
                 clockwise_rotation += current_value;
                 break;
             case CW:
+                if (current_value == 0) break;
                 if (is_mirrored_x || is_mirrored_y) {
                     current_value *= -1;
                 }
                 clockwise_rotation += current_value;
                 break;
             case MX:
+                if (current_value == 0) break;
                 is_mirrored_x = !is_mirrored_x;
                 //clockwise_rotation = (clockwise_rotation+2)%4;
                 break;
             case MY:
+                if (current_value == 0) break;
                 is_mirrored_y = !is_mirrored_y;
                 //clockwise_rotation = (clockwise_rotation+2)%4;
                 break;
